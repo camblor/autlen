@@ -4616,29 +4616,112 @@ AFND *AFNDTransforma(AFND *afnd)
     /* int numero_estados = afnd->num_estados; */
 
     int numSimbolos = AFNDNumSimbolos(afnd);
-    int numEstados;
+    int numEstados = AFNDNumEstados(afnd);
+    int indiceEstadoInicial = AFNDIndiceEstadoInicial(afnd);
     int estado;
     int simbolo;
+    int i, j;
 
     /* Estado inicial */
-    int inicial = AFNDIndiceEstadoInicial(afnd);
-    int* inicialDeterministaIndex = NULL;
+    
+    int *inicialDeterministaIndex = NULL;
     int numIniciales = 0;
-    char* inicialDeterminista = NULL;
+    char *inicialDeterminista = NULL;
     /*Pila*/
-    StackNode* stack = NULL;
+    StackNode *stack = NULL;
     int estadoActualIndice;
+
+    /* Tabla dinámica */
+    int ***transiciones = NULL;
+
+    /*Reserva de memoria*/
+    transiciones = malloc(sizeof(int **) * numEstados);
+    /*Filas: estados*/
+    for (i = 0; i < numEstados; i++)
+    {
+        transiciones[i] = malloc(sizeof(int *) * numEstados);
+        /*Columnas: estados*/
+        for (j = 0; j < numEstados; j++)
+        {
+            transiciones[i][j] = malloc(sizeof(int));
+
+            /* Inicializacion: Calculamos transiciones Lambda */
+
+            for (simbolo = 0; simbolo < numSimbolos; simbolo++)
+            {
+                if (AFNDCierreLTransicionIJ(afnd, i, j))
+                {
+                    transiciones[i][j][0] = 1;
+                    break;
+                }
+                else
+                {
+                    transiciones[i][j][0] = 0;
+                }
+            }
+
+            /*printf("(%d, %d)",i, simbolo);*/
+            printf("%d ", transiciones[i][j][0]);
+            fflush(stdout);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    /*Generando segunda tabla*/
+    /*Filas: Estados*/
+    printf("   + 0 . l\n");
+    for(i=0;i<numEstados;i++){
+        printf("%d| ", i);
+        transiciones[i] = realloc(transiciones[i], sizeof(int*)*numSimbolos+1);
+        /*Columna: Simbolos*/
+        for(j=0;j<=numSimbolos;j++){
+            /*Si no hay ninguna transicion*/
+            transiciones[i][j] = malloc(sizeof(int));
+            transiciones[i][j][0] = 0;
+            for(estado=0;estado<numEstados;estado++){
+                
+                /*Si hay se indica primero cuantas hay y luego se indica el indice*/
+                if(j < numSimbolos && AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i, j, estado)){
+                    transiciones[i][j] = realloc(transiciones[i][j], sizeof(transiciones[i][j]) + sizeof(int));
+                    transiciones[i][j][0]++;
+                    transiciones[i][j][transiciones[i][j][0]] = estado;
+                        
+                }
+                if(j == numSimbolos && i != estado && AFNDCierreLTransicionIJ(afnd, i, estado)){
+                    
+                    transiciones[i][j] = realloc(transiciones[i][j], sizeof(transiciones[i][j]) + sizeof(int));
+                    transiciones[i][j][0]++;
+                    transiciones[i][j][transiciones[i][j][0]] = estado;
+                }
+                
+            }
+            printf("%d ", transiciones[i][j][0]);
+        }
+        printf("\n");        
+    }
     
 
-    /* Encontrar estado inicial transformado (Posibilidad varios) */
-    for(estado=0; estado<AFNDNumEstados(afnd);estado++ ){
-        if(AFNDCierreLTransicionIJ(afnd, inicial, estado)){
-            if(inicialDeterminista == NULL){
-                inicialDeterminista = (char*) malloc(strlen(AFNDNombreEstadoEn(afnd, estado)) * sizeof(char) + 1);
-                strcpy(inicialDeterminista,  AFNDNombreEstadoEn(afnd, estado));
+    /*
+    
+    cada fila numsimbolos+1 columnas
+    a la hora de añadirlo comprobar que no esta ya
+
+    transiciones[i][j] = realloc(transiciones[i][j], transiciones[i][j] + sizeof(int));*/
+
+    /* Hallar transiciones posibles para cada estado */
+    for (estado = 0; estado < AFNDNumEstados(afnd); estado++)
+    {
+        if (AFNDCierreLTransicionIJ(afnd, indiceEstadoInicial, estado))
+        {
+            if (inicialDeterminista == NULL)
+            {
+                inicialDeterminista = (char *)malloc(strlen(AFNDNombreEstadoEn(afnd, estado)) * sizeof(char) + 1);
+                strcpy(inicialDeterminista, AFNDNombreEstadoEn(afnd, estado));
             }
-            else{
-                inicialDeterminista =  realloc(inicialDeterminista, sizeof(inicialDeterminista) + (strlen(AFNDNombreEstadoEn(afnd, estado)) * sizeof(char) + 1));
+            else
+            {
+                inicialDeterminista = realloc(inicialDeterminista, sizeof(inicialDeterminista) + (strlen(AFNDNombreEstadoEn(afnd, estado)) * sizeof(char) + 1));
                 strcat(inicialDeterminista, AFNDNombreEstadoEn(afnd, estado));
             }
             stack_push(&stack, estado);
@@ -4646,30 +4729,65 @@ AFND *AFNDTransforma(AFND *afnd)
         }
     }
 
+    /* Tabla de Transiciones automata determinista
+             Sym1   |   Sym2   | ... | Symn 
+       ----------------------------------------
+       q0|   q0q1   |    q0    | ... |  n/d
+       q1|   n/d    |    q2    | ... |  n/d
+       q2|   n/d    |    n/d   | ... |  n/d
+    */
+    int ***tablaTransiciones = malloc(sizeof(int **) * numSimbolos);
+    int ***tablaTransicionesAD = malloc(sizeof(int **) * numSimbolos);
+
+    for (simbolo = 0; simbolo < numSimbolos; simbolo++)
+    {
+        tablaTransiciones[simbolo] = malloc(sizeof(int *) * numEstados);
+        tablaTransicionesAD[simbolo] = malloc(sizeof(int *) * numEstados);
+    }
+
+    /*Array de n ints reallocable mientras se crea la tabla.*/
+
     /* Comprobamos primeras transiciones */
-    while(!stack_isEmpty(stack)){
-        
+    while (!stack_isEmpty(stack))
+    {
+
         /* Obtenemos el último de los estados */
         estadoActualIndice = stack_pop(&stack);
 
         /* Procesamos todas las entradas */
 
-        for(simbolo=0; simbolo<numSimbolos; simbolo++){
-            for(estado=0; estado<numEstados; estado++){
-                if(AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, estadoActualIndice, simbolo, estado)){
-                    printf("Hola!\n");
+        for (simbolo = 0; simbolo < numSimbolos; simbolo++)
+        {
+            for (estado = 0; estado < numEstados; estado++)
+            {
+                tablaTransiciones[simbolo][estado] = malloc(sizeof(int));
+                tablaTransiciones[simbolo][estado][0] = -1;
+
+                if (AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, estadoActualIndice, simbolo, estado))
+                {
+                    tablaTransiciones[simbolo][estado][0] = estado;
+                    printf("--{%s} transita a {%s} con [%s].\n", AFNDNombreEstadoEn(afnd, estadoActualIndice), AFNDNombreEstadoEn(afnd, estado), AFNDSimboloEn(afnd, simbolo));
                 }
             }
         }
+        printf("------FIN ESTADO %d-----\n", estadoActualIndice);
     }
+    /*
+    for(simbolo=0; simbolo<numSimbolos; simbolo++){
+        tablaTransicionesAD[simbolo][0] = malloc(sizeof(int) * numIniciales);
+        tablaTransicionesAD[simbolo][0] = tablaTransiciones[simbolo][estado][0];
+    }
+    */
 
+    /* TABLA DE TRANSICIONES DEL AD
+             Sym1   |   Sym2   | ... | Symn 
+       ----------------------------------------
+       c0|   q0q1   |    q0    | ... |  n/d
     
+    */
 
-    
-    printf("INICIAL: %s\n", inicialDeterminista);            
+    printf("INICIAL: %s\n", inicialDeterminista);
     fflush(stdout);
-
-    inicialDeterministaIndex = malloc(sizeof(int) * numIniciales);
 
     /*Procesar entradas estado inicial*/
 
@@ -4686,7 +4804,17 @@ AFND *AFNDTransforma(AFND *afnd)
     /*Creamos el nuevo estado*/
     /*falta nombre, num_estados y num_simbolos*/
 
-    /**/
+    for (simbolo = 0; simbolo < numSimbolos; simbolo++)
+    {
+        for (int estado = 0; estado < numEstados; estado++)
+        {
+            free(tablaTransiciones[simbolo][estado]);
+        }
+        free(tablaTransiciones[simbolo]);
+    }
+
+    free(tablaTransiciones);
+    free(inicialDeterminista);
+
     return afnd;
 }
-

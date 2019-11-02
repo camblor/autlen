@@ -12,7 +12,7 @@ int main(int argc, char **argv)
     AFNDInsertaSimbolo(p_afnd, "0");
     AFNDInsertaSimbolo(p_afnd, ".");
     AFNDInsertaEstado(p_afnd, "q0", INICIAL);
-    AFNDInsertaEstado(p_afnd, "q1", INICIAL);
+    AFNDInsertaEstado(p_afnd, "q1", NORMAL);
     AFNDInsertaEstado(p_afnd, "q2", NORMAL);
     AFNDInsertaEstado(p_afnd, "q3", NORMAL);
     AFNDInsertaEstado(p_afnd, "q4", NORMAL);
