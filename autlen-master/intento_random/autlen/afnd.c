@@ -4860,8 +4860,8 @@ AFND *AFNDTransforma(AFND *afnd)
         {
             free(transiciones[estado][simbolo]);
         }
-        free(transiciones[estado]);
         
+        free(transiciones[estado]);
     }
     /*TODO liberar inicialDefinitivo y transicionesD*/
 
