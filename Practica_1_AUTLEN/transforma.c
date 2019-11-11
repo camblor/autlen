@@ -2,10 +2,33 @@
 
 #include "transforma.h"
 
+
 AFND * AFNDTransforma(AFND * p_afnd){
   AFND * afd;
+  int i, j, simb;
+  int* finales;
+  int* matriz_est_dist[AFNDNumEstados(p_afnd)][AFNDNumEstados(p_afnd)] = NULL;
 
-  afd= AFNDNuevo("afd", 6, 3);
+  afd= AFNDNuevo("afd", 6, AFNDNumSimbolos(p_afnd));
+
+  for(i = 0;i<AFNDNumEstados(p_afnd);i++){
+    printf("%s %d \t", AFNDNombreEstadoEn(p_afnd, i), AFNDTipoEstadoEn(p_afnd, i)); 
+
+    for (j = 0; j < AFNDNumEstados(p_afnd); j++){
+      printf("\n%s -->: %s\n", AFNDNombreEstadoEn(p_afnd, i), AFNDNombreEstadoEn(p_afnd, j)); 
+      printf("Transiciones Lambda:"); 
+      printf(" %d \t", AFNDLTransicionIJ(p_afnd, i , j));
+      printf("\n");
+
+      for(simb = 0; simb < AFNDNumSimbolos(p_afnd); simb++){
+        printf("Transiciones simb %s: ", AFNDSimboloEn(p_afnd, simb));
+        printf("  %d \t", AFNDTransicionIndicesEstadoiSimboloEstadof(p_afnd, i, simb, j));
+      }
+      printf("\n");
+    }
+    printf("\n");
+    printf("\n");
+  }
 
   AFNDInsertaSimbolo(afd,"+");
   AFNDInsertaSimbolo(afd, "0");
