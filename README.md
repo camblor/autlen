@@ -7,7 +7,7 @@ Prácticas de la asignatura Autómatas y Lenguajes - Ing.Informática - UAM 2019
 Primera práctica. Se desarrolla un método que transforme autómatas finitos no deterministas en autómatas finitos deterministas.
 
 
-### Usage
+### Utilizacion
 
 ```bash
 cd Practica1
