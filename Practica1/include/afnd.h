@@ -2,6 +2,8 @@
 #define AFND_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define INICIAL 0
 #define FINAL 1
@@ -48,8 +50,5 @@ void AFNDADot(AFND *p_afnd);
 int AFNDNumSimbolos(AFND *p_afnd);
 int AFNDNumEstados(AFND *p_afnd);
 int AFNDTipoEstadoEn(AFND *p_afnd, int pos);
-
-/* ALGORITMO DE LA PRACTICA */
-AFND * AFNDTransforma(AFND * afnd);
 
 #endif

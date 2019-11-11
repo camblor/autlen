@@ -1,5 +1,5 @@
 
-#include "afnd.h"
+#include "../include/transforma.h"
 /*#include "transforma.h"*/
 
 int main(int argc, char **argv)
