@@ -3,11 +3,11 @@ TARGET   = main_ejemplo
 
 CC       = gcc
 # compiling flags here
-CFLAGS   =  -Wall -I.
+CFLAGS   =  -ansi -Wall -I.
 
 LINKER   = gcc
 # linking flags here
-LFLAGS   =  -I. -lm
+LFLAGS   =  -ansi -I. -lm
 
 # change these to proper directories where each file should be
 SRCDIR   = src
