@@ -49,6 +49,7 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
         }
         printf("|\n");
     }
+    printf("\n");
     return transiciones;
 }
 /*
@@ -142,53 +143,83 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
     return transicionesD;
 }
 
+int **crearVisitados(int* inicialDefinitivo)
+{
+    int i, j;
+    int** visitados;
+    visitados = malloc(sizeof(int *));
+    visitados[0] = malloc(sizeof(int));
+    visitados[0][0] = 1;
+    visitados[1] = inicialDefinitivo;
+
+    printf("VISITADOS:\n");
+    for (i = 1; i <= visitados[0][INDEX]; i++)
+    {
+        printf("{");
+        for (j = 1; j <= visitados[i][INDEX]; j++)
+        {
+            printf(" %d ", visitados[i][j]);
+        }
+        printf("}\n");
+    }
+    printf("\n");
+    return visitados;
+}
+
 AFND *AFNDTransforma(AFND *afnd)
 {
-    int numSimbolos = AFNDNumSimbolos(afnd);
-    int numEstados = AFNDNumEstados(afnd);
+    /*
+    ----------------------------------
+            Variables
+    ----------------------------------
+    */
+    /* Proposito general (bucles) */
     int i = 0;
     int j = 0;
     int k = 0;
     int l = 0;
     int m = 0;
-
+    /* Datos generales del AFND */
+    int numSimbolos = AFNDNumSimbolos(afnd);
+    int numEstados = AFNDNumEstados(afnd);
     /* Tabla dinámica para el AFND*/
     int ***transiciones = NULL;
     /* Tabla dinámica para el AFD*/
     int ***transicionesD = NULL;
     int *inicialDefinitivo = NULL;
+    /* Tabla que almacena los estados visitados */
+    int **visitados = NULL;
+    /* Bandera que indica si el estado ya ha sido visitado */
+    int flag = 1;
+
     /*
     ----------------------------------
             ESTUDIO DEL AFND
     ----------------------------------
-    
-    Metemos la tabla de transiciones del AFND en transiciones.
     */
+
+    /* Metemos la tabla de transiciones del AFND en transiciones. */
     transiciones = estudiarAFND(afnd, numEstados, numSimbolos);
 
-    /*
-    Ahora debemos rellenar la tabla del AFD.
-    */
+    /* Ahora debemos rellenar la tabla del AFD. */
 
     /*
     ----------------------------------
             E.Inicial del AFD
     ----------------------------------
-    
-    Obtenemos el estado inicial teniendo en cuenta lambdas.
     */
+    /* Obtenemos el estado inicial teniendo en cuenta lambdas. */
     inicialDefinitivo = obtenerInicial(transiciones, AFNDIndiceEstadoInicial(afnd), numSimbolos);
 
     /*
     ----------------------------------
             CREACION TABLA DEL AFD
     ----------------------------------
-    
-    Metemos la tabla de transiciones del AFND en transiciones.
     */
-    transicionesD = inicialDeterminista(inicialDefinitivo, numSimbolos, transiciones, 0);
 
-    /*Procesado el estado inicial del AFD*/
+    /* Metemos la tabla de transiciones del AFND en transiciones. */
+    transicionesD = inicialDeterminista(inicialDefinitivo, numSimbolos, transiciones, 0);
+    /* Procesado el estado inicial del AFD. */
 
     /* 
     Ya tenemos guardadas en la tabla las transiciones del determinista 
@@ -196,23 +227,7 @@ AFND *AFNDTransforma(AFND *afnd)
     Contamos por estados también los conjuntos de estado (Definicion recursiva)
     */
 
-    int **visitados = NULL;
-    int flag = 1;
-    visitados = malloc(sizeof(int *));
-    visitados[0] = malloc(sizeof(int));
-    visitados[0][0] = 1;
-    visitados[1] = inicialDefinitivo;
-
-    printf("VISITADOS\n");
-    for (i = 1; i <= visitados[0][INDEX]; i++)
-    {
-        for (j = 1; j <= visitados[i][INDEX]; j++)
-        {
-            printf("%d ", visitados[i][j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
+    visitados = crearVisitados(inicialDefinitivo);
 
     /*
     visitados[0][0] = NUMERO DE ESTADOS VISITADOS
