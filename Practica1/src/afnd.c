@@ -4472,13 +4472,21 @@ void AFNDADot(AFND *
         _afnd_ofus_silly_small;
     /* fprintf(stdout, "ENTRA\n");*/
     _afnd_ofus_silly_small = (char *)
-        malloc(sizeof(char) * (strlen(p_afnd->nombre) + 1 + strlen(".dot")));
+        malloc(sizeof(char) * (strlen("../dot/") + strlen(p_afnd->nombre) + 1 + strlen(".dot")));
     strcpy(
         _afnd_ofus_silly_small, "../dot/");   
     strcat(
         _afnd_ofus_silly_small, p_afnd->nombre);
     strcat(_afnd_ofus_silly_small, ".dot");
     _afnd_ofus_silly_fast = fopen(_afnd_ofus_silly_small, "w");
+    if(_afnd_ofus_silly_fast == NULL){
+        free(_afnd_ofus_silly_small);
+        _afnd_ofus_silly_small = malloc(sizeof(char) * (strlen(p_afnd->nombre) + 1 + strlen(".dot")));
+        strcpy(
+        _afnd_ofus_silly_small, p_afnd->nombre);
+        strcat(_afnd_ofus_silly_small, ".dot");
+        _afnd_ofus_silly_fast = fopen(_afnd_ofus_silly_small, "w");
+    }
     printf("CREA Nombre fichero: %s\n", _afnd_ofus_silly_small);
     free(
         _afnd_ofus_silly_small);

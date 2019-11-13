@@ -4,8 +4,8 @@
 
 int main(int argc, char **argv)
 {
-    AFND *p_afnd;
-    AFND *afd;
+    AFND *p_afnd = NULL;
+    AFND *afd = NULL;
 
     p_afnd = AFNDNuevo("determinista", 6, 3);
     AFNDInsertaSimbolo(p_afnd, "+");
@@ -27,6 +27,7 @@ int main(int argc, char **argv)
     AFNDInsertaLTransicion(p_afnd, "q0", "q1");
     AFNDInsertaLTransicion(p_afnd, "q3", "q5");
     AFNDCierraLTransicion(p_afnd);
+    
     afd = AFNDTransforma(p_afnd);
     
     /*AFNDImprime(stdout, afd);*/

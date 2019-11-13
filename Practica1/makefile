@@ -3,7 +3,7 @@ TARGET   = main_ejemplo
 
 CC       = gcc
 # compiling flags here
-CFLAGS   =  -I.
+CFLAGS   =  -Wall -I.
 
 LINKER   = gcc
 # linking flags here
@@ -21,12 +21,12 @@ rm       = rm -f
 
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
-	$(LINKER) $(LFLAGS) -o $@ $(OBJECTS)
+	$(LINKER) $(LFLAGS) -static -g -o $@ $(OBJECTS)
 	@echo "Linking complete!"
 
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c -g $< -o $@
 	@echo "Compiled "$<" successfully!"
 
 .PHONY: clean
