@@ -4,7 +4,7 @@
 
 /*
 function: estudiarAFND
-return: tabla de transiciones del automata finito no determinista.
+return: cubo de transiciones del automata finito no determinista.
 */
 int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
 {
@@ -87,7 +87,7 @@ int *obtenerInicial(int ***transiciones, int indiceEstadoInicial, int numSimbolo
 
 /*
 function: inicialDeterminista
-retorno: tabla del AFD con el estado inicial incluido en:
+retorno: cubo del AFD con el estado inicial incluido en:
 
 transicionesD[n_estado][n_simbolo]
 */
@@ -142,9 +142,17 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
    */
     return transicionesD;
 }
-
+/*
+funcion: crearVisitados
+retorno: tabla de visitados
+*/
 int **crearVisitados(int* inicialDefinitivo)
 {
+    /* 
+    Ya tenemos guardadas en la tabla las transiciones del determinista 
+    Ahora recorremos esa tabla hasta encontrar un estado que no haya sido procesado.
+    Contamos por estados también los conjuntos de estado (Definicion recursiva)
+    */
     int i, j;
     int** visitados;
     visitados = malloc(sizeof(int *));
@@ -163,6 +171,15 @@ int **crearVisitados(int* inicialDefinitivo)
         printf("}\n");
     }
     printf("\n");
+    /*
+    visitados[0][0] = NUMERO DE ESTADOS VISITADOS
+    visitados[i] = ESTADO VISITADO QUE PUEDE ESTAR FORMADO POR VARIOS
+    visitados[i][0] = NUMERO DE ELEMENTOS DEL ESTADO
+    visitados[i][j] = ELEMENTOS DEL ESTADO   
+    
+    transicionesD[fila][estado][0] = n transiciones
+    transicionesD[fila][estado][x] = transicion
+    */
     return visitados;
 }
 
@@ -221,23 +238,12 @@ AFND *AFNDTransforma(AFND *afnd)
     transicionesD = inicialDeterminista(inicialDefinitivo, numSimbolos, transiciones, 0);
     /* Procesado el estado inicial del AFD. */
 
-    /* 
-    Ya tenemos guardadas en la tabla las transiciones del determinista 
-    Ahora recorremos esa tabla hasta encontrar un estado que no haya sido procesado.
-    Contamos por estados también los conjuntos de estado (Definicion recursiva)
-    */
-
-    visitados = crearVisitados(inicialDefinitivo);
-
-    /*
-    visitados[0][0] = NUMERO DE ESTADOS VISITADOS
-    visitados[i] = ESTADO VISITADO QUE PUEDE ESTAR FORMADO POR VARIOS
-    visitados[i][0] = NUMERO DE ELEMENTOS DEL ESTADO
-    visitados[i][j] = ELEMENTOS DEL ESTADO   
     
-    transicionesD[fila][estado][0] = n transiciones
-    transicionesD[fila][estado][x] = transicion
-    */
+    /* Creamos tabla de conjuntos de estados visitados */
+    visitados = crearVisitados(inicialDefinitivo);
+    /* Ahora que ya esta creado anadimos a ella los estados que vamos a ir visitando en el bucle principal*/
+
+    
 
     /* Para cada estado implicado */
     for (i = 0; i < visitados[0][INDEX]; i++)
