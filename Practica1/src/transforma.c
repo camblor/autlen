@@ -2,6 +2,9 @@
 
 #define INDEX 0
 
+/* Tabla dinámica para el AFD*/
+int ***transicionesDet = NULL;
+
 /*
 function: estudiarAFND
 return: cubo de transiciones del automata finito no determinista.
@@ -56,13 +59,13 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
 function: obtenerInicial
 return: array de enteros con los estados iniciales, lambdas ya tenidas en cuenta
 */
-int *obtenerInicial(int ***transiciones, int indiceEstadoInicial, int numSimbolos)
+int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
 {
     int i;
     int *inicialDefinitivo = NULL;
     inicialDefinitivo = malloc(sizeof(int));
     inicialDefinitivo[INDEX] = 1;
-    inicialDefinitivo[inicialDefinitivo[INDEX]] = indiceEstadoInicial;
+    inicialDefinitivo[inicialDefinitivo[INDEX]] = indiceEstado;
 
     /*
     Guardamos estados iniciales aplicadas lambdas:
@@ -72,14 +75,14 @@ int *obtenerInicial(int ***transiciones, int indiceEstadoInicial, int numSimbolo
     ...
     inicialDefinitivo[n] = estado inicial n
     */
-    if (transiciones[indiceEstadoInicial][numSimbolos][INDEX] != 0)
+    if (transiciones[indiceEstado][numSimbolos][INDEX] != 0)
     {
-        inicialDefinitivo = realloc(inicialDefinitivo, sizeof(inicialDefinitivo) + sizeof(int) * transiciones[indiceEstadoInicial][numSimbolos][INDEX]);
+        inicialDefinitivo = realloc(inicialDefinitivo, sizeof(inicialDefinitivo) + sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]);
         /*Transiciones lambda*/
-        for (i = 0; i < transiciones[indiceEstadoInicial][numSimbolos][INDEX]; i++)
+        for (i = 0; i < transiciones[indiceEstado][numSimbolos][INDEX]; i++)
         {
             inicialDefinitivo[INDEX]++;
-            inicialDefinitivo[inicialDefinitivo[INDEX]] = transiciones[indiceEstadoInicial][numSimbolos][i];
+            inicialDefinitivo[inicialDefinitivo[INDEX]] = transiciones[indiceEstado][numSimbolos][i];
         }
     }
     return inicialDefinitivo;
@@ -87,9 +90,7 @@ int *obtenerInicial(int ***transiciones, int indiceEstadoInicial, int numSimbolo
 
 /*
 function: inicialDeterminista
-retorno: cubo del AFD con el estado inicial incluido en:
-
-transicionesD[n_estado][n_simbolo]
+retorno: cubo del AFD con el estado inicial visitado e incluido en transicionesD[n_estado][n_simbolo].
 */
 int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, int fila)
 {
@@ -127,6 +128,7 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
             }
         }
     }
+
     /*
     Procesamos estados accesibles desde los estados iniciales
 
@@ -146,7 +148,7 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
 funcion: crearVisitados
 retorno: tabla de visitados
 */
-int **crearVisitados(int* inicialDefinitivo)
+int **crearVisitados(int *inicialDefinitivo)
 {
     /* 
     Ya tenemos guardadas en la tabla las transiciones del determinista 
@@ -154,7 +156,7 @@ int **crearVisitados(int* inicialDefinitivo)
     Contamos por estados también los conjuntos de estado (Definicion recursiva)
     */
     int i, j;
-    int** visitados;
+    int **visitados;
     visitados = malloc(sizeof(int *));
     visitados[0] = malloc(sizeof(int));
     visitados[0][0] = 1;
@@ -183,6 +185,42 @@ int **crearVisitados(int* inicialDefinitivo)
     return visitados;
 }
 
+void nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, int fila)
+{
+    int i, j, k;
+
+    for (i = 1; i <= vector[INDEX]; i++)
+    {
+        /* Para cada estado inicial del Determinista */
+        for (j = 0; j < numSimbolos; j++)
+        {
+            /*Consultamos todos los simbolos*/
+            /*Inicializamos poniendo a 0 el numero de cada transicion*/
+            transicionesDet[fila] = malloc(sizeof(int*));
+            if (transicionesDet[fila][j] == NULL)
+            {
+                transicionesDet[fila][j] = malloc(sizeof(int));
+                transicionesDet[fila][j][fila] = 0;
+            }
+
+            /* Si hay alguna transicion desde estado inicial actual con simbolo j*/
+            if (transiciones[vector[i]][j][INDEX] != 0)
+            {
+                /*Reservamos la memoria necesaria para las transiciones que haya*/
+
+                transicionesDet[fila][j] = realloc(transicionesDet[fila][j], sizeof(transicionesDet[fila][j]) + sizeof(int) * transiciones[vector[i]][numSimbolos][INDEX]);
+
+                /*Y las guardamos en la tabla del determinista*/
+                for (k = 1; k <= transiciones[vector[i]][j][INDEX]; k++)
+                {
+                    transicionesDet[fila][j][INDEX]++;
+                    transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
+                }
+            }
+        }
+    }
+}
+
 AFND *AFNDTransforma(AFND *afnd)
 {
     /*
@@ -196,18 +234,20 @@ AFND *AFNDTransforma(AFND *afnd)
     int k = 0;
     int l = 0;
     int m = 0;
+    int lel, lul, lol;
     /* Datos generales del AFND */
     int numSimbolos = AFNDNumSimbolos(afnd);
     int numEstados = AFNDNumEstados(afnd);
-    /* Tabla dinámica para el AFND*/
+    /* Tablas dinámicas*/
     int ***transiciones = NULL;
-    /* Tabla dinámica para el AFD*/
-    int ***transicionesD = NULL;
+    int ***TestD;
     int *inicialDefinitivo = NULL;
     /* Tabla que almacena los estados visitados */
     int **visitados = NULL;
     /* Bandera que indica si el estado ya ha sido visitado */
-    int flag = 1;
+    int flag = 0;
+    int fila = 0;
+    int *temporal = NULL;
 
     /*
     ----------------------------------
@@ -227,6 +267,7 @@ AFND *AFNDTransforma(AFND *afnd)
     */
     /* Obtenemos el estado inicial teniendo en cuenta lambdas. */
     inicialDefinitivo = obtenerInicial(transiciones, AFNDIndiceEstadoInicial(afnd), numSimbolos);
+    fila++;
 
     /*
     ----------------------------------
@@ -235,36 +276,35 @@ AFND *AFNDTransforma(AFND *afnd)
     */
 
     /* Metemos la tabla de transiciones del AFND en transiciones. */
-    transicionesD = inicialDeterminista(inicialDefinitivo, numSimbolos, transiciones, 0);
+    transicionesDet = inicialDeterminista(inicialDefinitivo, numSimbolos, transiciones, 0);
+
     /* Procesado el estado inicial del AFD. */
 
-    
     /* Creamos tabla de conjuntos de estados visitados */
     visitados = crearVisitados(inicialDefinitivo);
     /* Ahora que ya esta creado anadimos a ella los estados que vamos a ir visitando en el bucle principal*/
 
-    
-
-    /* Para cada estado implicado */
     for (i = 0; i < visitados[0][INDEX]; i++)
     {
+        /* Para cada estado i */
         printf("FILA %d:\n", i + 1);
-        /* Consultar transiciones */
         for (j = 0; j < numSimbolos; j++)
         {
+            /* Introducimos el simbolo j */
             printf("SIMBOLO: %s - TRANSICIONES: ", AFNDSimboloEn(afnd, j));
-            /*Numero de transiciones iniciales == numero de elementos de algun array de visitados*/
-            for (k = 1; k <= visitados[0][INDEX]; k++)
+
+            /* y comprobamos los estados ya visitados k */
+            for (k = 1; k <= visitados[INDEX][INDEX]; k++)
             {
                 flag = 0;
                 /* Si tienen el mismo numero de elementos*/
-                if (transicionesD[i][j][INDEX] == visitados[k][INDEX])
+                if (transicionesDet[i][j][INDEX] == visitados[k][INDEX])
                 {
                     /*Analizamos elemento a elemento*/
                     for (m = 1; m <= visitados[k][INDEX]; m++)
                     {
                         /*Si algun elemento distinto --> NO ES EL MISMO -> SIGUIENTE (break)*/
-                        if (transicionesD[i][j][m] != visitados[k][m])
+                        if (transicionesDet[i][j][m] != visitados[k][m])
                         {
                             flag = 0;
                             break;
@@ -277,23 +317,33 @@ AFND *AFNDTransforma(AFND *afnd)
                     }
                 }
 
-                /*Si ya tenemos este procesado...*/
+                /* Si visitado --> pasamos al siguiente */
                 if (flag == 1)
                 {
                     break;
                 }
-                /* Si no hay ninguno que haya coincidido como numero de elementos o si haya pero no los elementos internos --> RECORREMOS*/
-                /* ACTUALIZAR visitados[0][0] al salir, de forma que este se convierta en el bucle principal*/
+                /* Si no visitado --> visitamos y lo metemos a la tabla de visitados*/
                 if (k == visitados[0][INDEX] && flag == 0)
                 {
-                    printf("TOCARIA RECORRER -> %d\n", transicionesD[i][j][INDEX]);
+                    printf("TOCARIA RECORRER -> %d\n", transicionesDet[i][j][INDEX]);
                     /* Para cada simbolo l */
-                    for (l = 0; l < numSimbolos; l++)
+
+                    /* Para cada estado dentro de los conjuntos de estados */
+                    for (l = 1; l <= transicionesDet[i][j][INDEX]; l++)
                     {
-                        /* Para cada estado dentro de los conjuntos de estados */
-                        for (m = 1; m <= transicionesD[i][l][INDEX]; m++)
+                        temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
+                        nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila);
+                        
+                        fila++;
+
+                        TestD = inicialDeterminista(temporal, numSimbolos, transiciones, 0);
+                        for (lel = 0; lel < numSimbolos; lel++)
                         {
-                            printf("%d - %s\n", transicionesD[i][l][m], AFNDSimboloEn(afnd, l));
+                            for (lol = 1; lol <= TestD[0][lel][0]; lol++)
+                            {
+                                printf(" %d ", TestD[0][lel][lol]);
+                            }
+                            printf("\n");
                         }
                     }
 
@@ -302,25 +352,26 @@ AFND *AFNDTransforma(AFND *afnd)
             }
         }
     }
+
     /*
     for(i=0;i<2;i++){
-        if(transicionesD[i] == NULL)
-                    printf("es la i\n");
+        if(transicionesDet[i] == NULL)
+                    printf("es la i=%d\n", i);
         for(j=0;j<numSimbolos;j++){
-            if(transicionesD[i][j] == NULL)
-                    printf("es la j\n");
-            for(k=1;k<=transicionesD[i][j][0];k++){
+            if(transicionesDet[i][j] == NULL)
+                    printf("es la i=%d / j=%d\n", i, j);
+            for(k=1;k<=transicionesDet[i][j][0];k++){
                 
-                if(transicionesD[i][j][k] == 0){
-                    printf("es la k\n");
+                if(transicionesDet[i][j][k] == 0){
+                    printf("es la k=%d / i=%d / j=%d\n",i, j, k);
                 }
-                printf("%d ", transicionesD[i][j][k]);
+                printf("%d ", transicionesDet[i][j][k]);
             }
             printf("\n");
         }
         printf("\n");
-    }   
-*/
+    }  */
+
 
     for (i = 0; i < numEstados; i++)
     {
