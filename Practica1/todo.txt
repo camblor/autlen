@@ -1,7 +1,11 @@
 TODO
 
-almacenar nombres de los estados del Automata finito determinista
-almacenar bien las transiciones del Automata finito determinista
+1.almacenar bien las transiciones del Automata finito determinista:
+
+1.1. No detecta conjuntos de mas de un estado en el tercer simbolo del ejemplo
+
+2.almacenar nombres de los estados del Automata finito determinista
+
 
 Una vez ya esten bien almacenadas (comprobar con el pdf)
 
