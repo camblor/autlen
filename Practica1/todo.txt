@@ -9,4 +9,4 @@ Crear nuevo automata a partir de la matri< (int*** transicionesDet)
 
 devolver dicho puntero
 
-fin
+fin del algoritmo
