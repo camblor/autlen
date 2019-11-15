@@ -1,0 +1,12 @@
+TODO
+
+almacenar nombres de los estados del Automata finito determinista
+almacenar bien las transiciones del Automata finito determinista
+
+Una vez ya esten bien almacenadas (comprobar con el pdf)
+
+Crear nuevo automata a partir de la matri< (int*** transicionesDet)
+
+devolver dicho puntero
+
+fin

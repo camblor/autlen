@@ -18,11 +18,8 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
 
     transiciones = (int***) malloc(sizeof(int **) * numEstados);
 
-    printf("    + 0 . l\n");
-    printf("   ________\n");
     for (i = 0; i < numEstados; i++)
     {
-        printf("q%d| ", i);
         transiciones[i] = (int**)malloc(sizeof(int *) * numSimbolos + 1);
 
         /*Columna: Simbolos*/
@@ -50,12 +47,25 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
                     transiciones[i][j][transiciones[i][j][INDEX]] = k;
                 }
             }
-            printf("%d ", transiciones[i][j][INDEX]);
+            if(transiciones[i][j][INDEX] == 0)
+            transiciones[i][j][INDEX] = -1;
+        }
+    }
+    return transiciones;
+}
+
+void imprimirAFND(int*** transiciones, int numEstados, int numSimbolos){
+    int i, j;
+    printf("     +  0  .  l\n");
+    printf("   _____________\n");
+    for(i=0;i<numEstados;i++){
+        printf("q%d| ", i);
+        for(j=0;j<=numSimbolos;j++){
+            printf("%2d ", transiciones[i][j][INDEX]);
         }
         printf("|\n");
     }
     printf("\n");
-    return transiciones;
 }
 /*
 function: obtenerInicial
@@ -136,7 +146,7 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
             /*Inicializamos poniendo a 0 el numero de cada transicion*/
 
             /* Si hay alguna transicion desde estado inicial actual con simbolo j*/
-            if (transiciones[vector[i]][j][INDEX] != 0)
+            if (transiciones[vector[i]][j][INDEX] != -1)
             {
                 /*Reservamos la memoria necesaria para las transiciones que haya*/
                 transicionesDet[fila][j] = realloc(transicionesDet[fila][j], sizeof(transicionesDet[fila][j]) + sizeof(int) * transiciones[vector[i]][j][INDEX]);
@@ -267,7 +277,7 @@ int*** nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
             /*Consultamos todos los simbolos*/
 
             
-            if (transiciones[vector[i]][jota][INDEX] != 0)
+            if (transiciones[vector[i]][jota][INDEX] != -1)
             {
                 /* Si hay alguna transicion desde estado actual con simbolo j*/
                 /*Reservamos la memoria necesaria para las transiciones que haya*/
@@ -277,20 +287,19 @@ int*** nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                 /*Y las guardamos en la tabla del determinista*/
                 for (k = 1; k <= transiciones[vector[i]][jota][INDEX]; k++)
                 {
-                    printf("Procesando transiciones[%d][%d][0] = %d\n",vector[i], jota, transiciones[vector[i]][jota][k]);
+                    printf("Procesando transiciones[%d][%d][%d] = %d\n\n",vector[i], jota, k, transiciones[vector[i]][jota][k]);
                     for(n=0;n<numSimbolos;n++){
                         for(l=0, flag = 0;l<=transicionesDet[fila][n][INDEX] && flag == 0;l++){
                             if(transiciones[vector[i]][n][k] == transicionesDet[fila][n][l]){
                                 flag=1;
                             }
                         }
-                        if(flag != 1){
+                        if(flag != 1 && transiciones[vector[i]][n][INDEX] != -1){
                             transicionesDet[fila][n][INDEX]++;
                             transicionesDet[fila][n][transicionesDet[fila][n][INDEX]] = transiciones[vector[i]][n][k];
                             
-                            printf("transiciones[%d][%d][%d] = %d\n\n",vector[i], n, k, transiciones[vector[i]][n][k]);
-                            printf("\t%d-%d\n",k,n);
-                            printf("transicionesDet[%d][%d][%d] = %d\n\n",fila, n, transicionesDet[fila][n][INDEX], transicionesDet[fila][n][transicionesDet[fila][n][INDEX]]);
+                            printf("transiciones[%d][%d][%d] = %d\n",vector[i], n, k, transiciones[vector[i]][n][k]);
+                            printf("transicionesDet[%d][%d][%d] = %d\n",fila, n, transicionesDet[fila][n][INDEX], transicionesDet[fila][n][transicionesDet[fila][n][INDEX]]);
                         }
 
                     }
@@ -508,6 +517,7 @@ AFND *AFNDTransforma(AFND *afnd)
         }
         printf("\n");
     }
+    imprimirAFND(transiciones, numEstados,numSimbolos);
 
     for (i = 0; i < numEstados; i++)
     {
