@@ -2,14 +2,14 @@ TODO
 
 1.almacenar bien las transiciones del Automata finito determinista:
 
-1.1. No detecta conjuntos de mas de un estado en el tercer simbolo del ejemplo
+1.1. SOLO FALTAN LAS LAMBDAS
 
-2.almacenar nombres de los estados del Automata finito determinista
-
+2. almacenar nombres de los estados del Automata finito determinista
+3. GUARDAR EN VISITADOS
 
 Una vez ya esten bien almacenadas (comprobar con el pdf)
 
-Crear nuevo automata a partir de la matri< (int*** transicionesDet)
+Crear nuevo automata a partir de la matriz (int*** transicionesDet)
 
 devolver dicho puntero
 

@@ -240,7 +240,6 @@ void imprimeVisitados(int *vector);
 
 void addVisitado(int *vector)
 {
-
     visitados = realloc(visitados, sizeof(visitados) + sizeof(int *));
     visitados[INDEX][INDEX]++;
     visitados[visitados[INDEX][INDEX]] = vector;
@@ -255,6 +254,8 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     int n = 0;
     int m = 0;
     int flag = 0;
+
+    /* Memoria */
     if (fila < 0)
     {
         return transicionesDet;
@@ -284,6 +285,8 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
         }
         transicionesDet[fila][n][INDEX] = 0;
     }
+
+    /* Ver entrada */
     int temp;
     printf("Vector fila %d: {", fila);
     for (i = 1; i <= vector[INDEX]; i++)
@@ -292,6 +295,8 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
         printf(" %d ", vector[i]);
     }
     printf("}\n");
+
+
 
     for (i = 1; i <= vector[INDEX]; i++)
     {
@@ -370,8 +375,22 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
 
 int *anadirTransiciones(int *vector, int ***transiciones, int indiceEstado, int numSimbolos)
 {
-    vector[INDEX]++;
-    vector[vector[INDEX]] = indiceEstado;
+    int i = 0;
+    int flag = 0;
+
+    for (i = 1; i <= vector[INDEX]; i++)
+    {
+        if (vector[i] == indiceEstado)
+        {
+            flag = 1;
+        }
+    }
+    if (flag != 1)
+    {
+        vector = (int *)realloc(vector, sizeof(vector) + sizeof(int));
+        vector[INDEX]++;
+        vector[vector[INDEX]] = indiceEstado;
+    }
 
     return vector;
 }
@@ -491,6 +510,7 @@ AFND *AFNDTransforma(AFND *afnd)
                         if (l == 1)
                         {
                             temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
+                            temporal = anadirTransiciones(temporal, transiciones, transicionesDet[i][j][l], numSimbolos);
                         }
                         else
                         {
