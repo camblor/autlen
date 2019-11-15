@@ -216,23 +216,10 @@ int **crearVisitados(int *vector)
     */
     /*int i, j;*/
     int **visitados_i;
-    visitados_i = (int **)malloc(sizeof(int *) * 2);
+    visitados_i = (int **)malloc(sizeof(int *)*4);
     visitados_i[INDEX] = (int *)malloc(sizeof(int));
     visitados_i[INDEX][INDEX] = 1;
     visitados_i[visitados_i[INDEX][INDEX]] = vector;
-    /*
-    printf("VISITADOS:\n");
-    for (i = 1; i <= visitados[0][INDEX]; i++)
-    {
-        printf("{");
-        for (j = 1; j <= visitados[i][INDEX]; j++)
-        {
-            printf(" %d ", visitados[i][j]);
-        }
-        printf("}\n");
-    }
-    printf("\n");
-    */
 
     return visitados_i;
 }
@@ -248,27 +235,29 @@ void imprimeVisitados(int **visitados_i)
         printf("i=%d/%d\n", i, visitados[INDEX][INDEX]);
         if (visitados[i] == NULL)
         {
-            printf("aqui\n");
             return;
         }
         printf("{");
+        fflush(stdout);
+
         for (j = 1; j <= visitados[i][INDEX]; j++)
         {
             printf(" %d ", visitados[i][j]);
+            fflush(stdout);
         }
         printf("}\n");
+        fflush(stdout);
     }
     printf("\n");
 }
 
-void addVisitado(int *vector)
+int** addVisitado(int *vector)
 {
-    visitados = realloc(visitados, sizeof(visitados) + sizeof(int *));
-    printf("visitados_index = %d\n", visitados[INDEX][INDEX]);
-    visitados[INDEX][INDEX]++;
-    printf("visitados_index = %d\n", visitados[INDEX][INDEX]);
+    n_visitados++;
+    visitados[INDEX][INDEX] = n_visitados;
+    visitados = realloc(visitados, sizeof(visitados) + sizeof(int*));
     visitados[visitados[INDEX][INDEX]] = vector;
-    imprimeVisitados(visitados);
+    return visitados;
 }
 
 int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, int fila)
@@ -282,16 +271,13 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     int flag = 0;
 
     /* Memoria */
-    if (fila < 0)
-    {
-        return transicionesDet;
-    }
 
     transicionesDet = (int ***)realloc(transicionesDet, (fila + 1) * sizeof(int **));
-    if (transicionesDet[fila] == NULL)
+    if (transicionesDet == NULL)
     {
-        transicionesDet[fila] = (int **)malloc(sizeof(int *) * (numSimbolos + 1));
+        return NULL;
     }
+    transicionesDet[fila] = (int **)malloc(sizeof(int *) * (numSimbolos + 1));
     if (transicionesDet[fila] == NULL)
     {
         return NULL;
@@ -300,10 +286,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     for (n = 0; n < numSimbolos; n++)
     {
 
-        if (transicionesDet[fila][n] == NULL)
-        {
-            transicionesDet[fila][n] = malloc(sizeof(int));
-        }
+        transicionesDet[fila][n] = malloc(sizeof(int));
 
         if (transicionesDet[fila][n] == NULL)
         {
@@ -362,8 +345,6 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
             }
         }
     }
-    if (fila == 2)
-        printf("\n__\n");
 
     return transicionesDet;
 }
@@ -507,37 +488,19 @@ AFND *AFNDTransforma(AFND *afnd)
                             temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
                         }
                         temporal = anadirTransiciones(temporal, transiciones, transicionesDet[i][j][l], numSimbolos);
-                        /*TODO actualizar para almacenarlo*/
-                        /*addVisitado(temporal);*/
-                        if (l == transicionesDet[i][j][INDEX])
-                        {
-                            transicionesDet = nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila);
-                            if (!transicionesDet)
-                            {
-                                printf("chao");
-                                fflush(stdout);
-                                return NULL;
-                            }
-                            fila++;
-                            printf("visitados_index = %d\n", visitados[INDEX][INDEX]);
-                            printf("n_visitados = %d\n", n_visitados);
-                            n_visitados++;
-                            visitados[INDEX][INDEX]++;
-                            /*
-                            addVisitado(temporal);
-                            visitados[visitados[INDEX][INDEX]] = (int**) malloc(sizeof(int*))
-                            */
-                            visitados[visitados[INDEX][INDEX]] = temporal;
-                        }
                     }
-
-                    /*addVisitado(transicionesDet[i][j]);*/
-
-                    /*Acaba de anadirlo*/
+                    transicionesDet = nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila);
+                    if (!transicionesDet)
+                    {
+                        return NULL;
+                    }
+                    fila++;
+                    visitados = addVisitado(temporal);
                 }
             }
         }
     }
+    imprimeVisitados(visitados);
     imprimirAFND(transiciones, numEstados, numSimbolos);
 
     for (i = 0; i < fila; i++)
