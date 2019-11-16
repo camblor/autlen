@@ -25,11 +25,11 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
 
     for (i = 0; i < numEstados; i++)
     {
-        transiciones[i] = (int **)malloc(sizeof(int *) * numSimbolos + 1);
+        transiciones[i] = (int **)malloc(sizeof(int *) * (numSimbolos + 1) );
 
         /*Columna: Simbolos*/
         for (j = 0; j <= numSimbolos; j++)
-        {
+        { 
             /*Inicializamos como si no hubiera ninguna transicion*/
             transiciones[i][j] = (int *)malloc(sizeof(int));
             transiciones[i][j][INDEX] = 0;
@@ -93,14 +93,15 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
 {
     int i;
     int *inicialDefinitivo = NULL;
+    int size = 0;
     inicialDefinitivo = (int *)malloc(sizeof(int));
     if (inicialDefinitivo == NULL)
     {
         return NULL;
     }
     inicialDefinitivo[INDEX] = 1;
+    inicialDefinitivo = realloc(inicialDefinitivo, sizeof(inicialDefinitivo) + sizeof(int));
     inicialDefinitivo[inicialDefinitivo[INDEX]] = indiceEstado;
-
     /*
     Guardamos estados iniciales aplicadas lambdas:
     inicialDefinitivo[0] = numero de estados iniciales.
@@ -109,12 +110,15 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
     ...
     inicialDefinitivo[n] = estado inicial n
     */
-    if (transiciones[indiceEstado][numSimbolos][INDEX] != 0)
+    if (transiciones[indiceEstado][numSimbolos][INDEX] != 0 && transiciones[indiceEstado][numSimbolos][INDEX] != -1)
     {
-        inicialDefinitivo = realloc(inicialDefinitivo, sizeof(inicialDefinitivo) + sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]);
+        size = (sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]);
+        printf("ADD %d\n", size);
+        inicialDefinitivo = realloc(inicialDefinitivo, sizeof(inicialDefinitivo) + size);
         /*Transiciones lambda*/
-        for (i = 0; i < transiciones[indiceEstado][numSimbolos][INDEX]; i++)
+        for (i = 1; i <= transiciones[indiceEstado][numSimbolos][INDEX]; i++)
         {
+            
             inicialDefinitivo[INDEX]++;
             inicialDefinitivo[inicialDefinitivo[INDEX]] = transiciones[indiceEstado][numSimbolos][i];
         }
@@ -279,8 +283,9 @@ int **addVisitado(int *vector)
     n_visitados++;
     printf("Entra en addVisitados. El nuevo numero es %d\n", n_visitados);
     visitados[INDEX][INDEX] = n_visitados;
-    visitados = (int **)reallocarray(visitados, sizeof(visitados) + sizeof(int *));
+    visitados = (int **)realloc(visitados, sizeof(visitados) + sizeof(int *));
     visitados[visitados[INDEX][INDEX]] = vector;
+    printf("hola");
     return visitados;
 }
 
@@ -374,7 +379,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                     */
 
                     transicionesDet[fila][j][INDEX]++;
-
+                    transicionesDet[fila][j] = realloc(transicionesDet[fila][j], sizeof(transicionesDet[fila][j]) + sizeof(int));
                     transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
 
                     /* Comprobar lambdas para el estado añadido transiciones[vector[i]][j][k]. */
@@ -625,7 +630,7 @@ AFND *AFNDTransforma(AFND *afnd)
     {
         for (j = 0; j < numSimbolos; j++)
         {
-            free(transiciones[i][j]);
+            free(transiciones[i][j]); 
         }
 
         free(transiciones[i]);

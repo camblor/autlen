@@ -21,7 +21,7 @@ rm       = rm -f
 
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
-	$(LINKER) $(LFLAGS) -static -g -o $@ $(OBJECTS)
+	$(LINKER) $(LFLAGS)  -g -o $@ $(OBJECTS)
 	@echo "Linking complete!"
 
 
