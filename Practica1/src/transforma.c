@@ -344,7 +344,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     }
 
     /* Ver entrada */
-    imprimeVectorFila(vector, fila);
+    /*imprimeVectorFila(vector, fila);*/
 
     for (i = 1; i <= vector[INDEX]; i++)
     {
@@ -618,9 +618,6 @@ AFND *AFNDTransforma(AFND *afnd)
     
     Impresion por pantalla para control
     */
-
-    imprimeVisitados(visitados);
-    imprimirAFND(transiciones, numEstados, numSimbolos);
 
     for (i = 0; i < fila; i++)
     {

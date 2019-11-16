@@ -35,8 +35,11 @@ clean:
 	@echo "Cleanup complete!"
 
 
-valgrind: valgrind
+valgrind: 
 	valgrind --leak-check=full --track-origins=yes $(BINDIR)/$(TARGET)
+
+exec:
+	./bin/main_ejemplo
 	
 .PHONY: remove
 remove: clean
