@@ -536,7 +536,7 @@ AFND *AFNDTransforma(AFND *afnd)
                         /*Si algun elemento distinto --> NO ES EL MISMO -> SIGUIENTE (break)*/
                         if (transicionesDet[i][j][m] != visitados[k][m])
                         {
-                            printf("VISITADO YA!\n");
+                            printf("No visitado!\n");
                             flag = 0;
                         }
                         /* Si todos los elementos son iguales --> VISITADO flag = 1*/
