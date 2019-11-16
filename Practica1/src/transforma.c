@@ -667,8 +667,10 @@ AFND *AFNDTransforma(AFND *afnd)
     */
 
     afd = AFNDNuevo("determinista", 6, 3);
-    char *temp1;
+    char *nombre;
     char *temp2;
+    int tipoEstado = NORMAL;
+    int estadoDefinitivo = NORMAL;
     for (i = 0; i < numSimbolos; i++)
     {
 
@@ -676,17 +678,44 @@ AFND *AFNDTransforma(AFND *afnd)
     }
 
     /*Aqui tenemos los nombres de los estados*/
-    printf("\n");
+    
     for (i = 0; i < fila; i++)
     {
-        printf("q");
-        for (l = 1; l <= visitados[i + 1][INDEX]; l++)
+        estadoDefinitivo = NORMAL;
+        nombre = malloc(sizeof(char) * 2);
+       
+        strcpy(nombre, "q");
+
+        for (l = 1, tipoEstado = NORMAL; l <= visitados[i + 1][INDEX]; l++)
         {
-            printf("%d", visitados[i + 1][l]);
+            tipoEstado = AFNDTipoEstadoEn(afnd, visitados[i+1][l]);
+
+            /* INICIALYFINAL */
+            if((tipoEstado == INICIAL_Y_FINAL && estadoDefinitivo != INICIAL_Y_FINAL) || (tipoEstado == INICIAL && estadoDefinitivo == FINAL) || (tipoEstado == FINAL && estadoDefinitivo == INICIAL) ){
+                estadoDefinitivo == INICIAL_Y_FINAL;
+            }
+            /* INICIAL */
+            else if(tipoEstado == INICIAL && estadoDefinitivo == NORMAL){
+                estadoDefinitivo = INICIAL;
+            }
+            /* FINAL */
+            else if(tipoEstado == FINAL && estadoDefinitivo == NORMAL){
+                estadoDefinitivo = FINAL;
+            }
+            
+            
+            temp2 = malloc(sizeof(char) * 2);
+            nombre = realloc(nombre, sizeof(nombre) + sizeof(char));
+            sprintf(temp2, "%d", visitados[i+1][l]);
+            strcat(nombre, temp2);
+            
+            free(temp2);
         }
-        printf("\n");
+        printf("ESTADO %s es %d\n", nombre, estadoDefinitivo);
+        AFNDInsertaEstado(afd, nombre, estadoDefinitivo);
+        free(nombre);
     }
-    printf("\n");
+
 
     /*Aqui tenemos las transiciones*/
     for (i = 0; i < fila; i++)

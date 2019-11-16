@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "afnd.h"
-#include "transforma.h"
+#include "../include/afnd.h"
+#include "../include/transforma.h"
 
-int main(int argc, char ** argv)
+int main1(int argc, char ** argv)
 {
 
 	AFND * p_afnd;
