@@ -283,8 +283,11 @@ int **addVisitado(int *vector)
     n_visitados++;
     printf("Entra en addVisitados. El nuevo numero es %d\n", n_visitados);
     visitados[INDEX][INDEX] = n_visitados;
-    visitados = (int **)realloc(visitados, sizeof(visitados) + sizeof(int *));
+
+    visitados = (int **)realloc(visitados, (visitados[INDEX][INDEX] * sizeof(int *) + sizeof(int*) ));
+
     visitados[visitados[INDEX][INDEX]] = vector;
+    
     printf("hola");
     return visitados;
 }
@@ -379,6 +382,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                     */
 
                     transicionesDet[fila][j][INDEX]++;
+                    
                     transicionesDet[fila][j] = realloc(transicionesDet[fila][j], sizeof(transicionesDet[fila][j]) + sizeof(int));
                     transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
 
@@ -395,6 +399,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                         if (!flag2)
                         {
                             transicionesDet[fila][j][INDEX]++;
+                            transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
                             transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[transiciones[vector[i]][j][k]][numSimbolos][m];
                         }
                     }
@@ -628,7 +633,7 @@ AFND *AFNDTransforma(AFND *afnd)
 
     for (i = 0; i < numEstados; i++)
     {
-        for (j = 0; j < numSimbolos; j++)
+        for (j = 0; j <= numSimbolos; j++)
         {
             free(transiciones[i][j]); 
         }
