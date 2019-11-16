@@ -678,44 +678,44 @@ AFND *AFNDTransforma(AFND *afnd)
     }
 
     /*Aqui tenemos los nombres de los estados*/
-    
+
     for (i = 0; i < fila; i++)
     {
         estadoDefinitivo = NORMAL;
         nombre = malloc(sizeof(char) * 2);
-       
+
         strcpy(nombre, "q");
 
         for (l = 1, tipoEstado = NORMAL; l <= visitados[i + 1][INDEX]; l++)
         {
-            tipoEstado = AFNDTipoEstadoEn(afnd, visitados[i+1][l]);
+            tipoEstado = AFNDTipoEstadoEn(afnd, visitados[i + 1][l]);
 
             /* INICIALYFINAL */
-            if((tipoEstado == INICIAL_Y_FINAL && estadoDefinitivo != INICIAL_Y_FINAL) || (tipoEstado == INICIAL && estadoDefinitivo == FINAL) || (tipoEstado == FINAL && estadoDefinitivo == INICIAL) ){
+            if ((tipoEstado == INICIAL_Y_FINAL && estadoDefinitivo != INICIAL_Y_FINAL) || (tipoEstado == INICIAL && estadoDefinitivo == FINAL) || (tipoEstado == FINAL && estadoDefinitivo == INICIAL))
+            {
                 estadoDefinitivo == INICIAL_Y_FINAL;
             }
             /* INICIAL */
-            else if(tipoEstado == INICIAL && estadoDefinitivo == NORMAL){
+            else if (tipoEstado == INICIAL && estadoDefinitivo == NORMAL)
+            {
                 estadoDefinitivo = INICIAL;
             }
             /* FINAL */
-            else if(tipoEstado == FINAL && estadoDefinitivo == NORMAL){
+            else if (tipoEstado == FINAL && estadoDefinitivo == NORMAL)
+            {
                 estadoDefinitivo = FINAL;
             }
-            
-            
+
             temp2 = malloc(sizeof(char) * 2);
             nombre = realloc(nombre, sizeof(nombre) + sizeof(char));
-            sprintf(temp2, "%d", visitados[i+1][l]);
+            sprintf(temp2, "%d", visitados[i + 1][l]);
             strcat(nombre, temp2);
-            
             free(temp2);
         }
         printf("ESTADO %s es %d\n", nombre, estadoDefinitivo);
         AFNDInsertaEstado(afd, nombre, estadoDefinitivo);
         free(nombre);
     }
-
 
     /*Aqui tenemos las transiciones*/
     for (i = 0; i < fila; i++)
@@ -725,6 +725,7 @@ AFND *AFNDTransforma(AFND *afnd)
             printf("es la i=%d\n", i);
             return NULL;
         }
+
         printf("q");
         for (l = 1; l <= visitados[i + 1][INDEX]; l++)
         {
@@ -741,23 +742,45 @@ AFND *AFNDTransforma(AFND *afnd)
             }
 
             printf("{");
-            for (k = 1; k <= transicionesDet[i][j][INDEX]; k++)
+
+            /*la i y la j funcionan correctamente.*/
+
+            /*Para cada celda recorrer vector y crear nombre estado.*/
+            nombre = malloc(sizeof(char) * 2);
+            strcpy(nombre, "q");
+            for (k = 1, flag = 0; k <= transicionesDet[i][j][INDEX]; k++)
             {
+                flag = 1;
                 if (transicionesDet[i][j][k] > numEstados)
                 {
                     printf("\ntransicionesDet[%d][%d][0] = %d", i, j, transicionesDet[i][j][INDEX]);
                     printf("\nError en el estado de fila %d, columna j=%d. Elemento %d\n", i, j, k);
                     return NULL;
                 }
+                temp2 = malloc(sizeof(char) * 2);
+                nombre = realloc(nombre, sizeof(nombre) + sizeof(char));
+                sprintf(temp2, "%d", transicionesDet[i][j][k]);
+                strcat(nombre, temp2);
+                printf("TRANSICION: %s -> %s\n",AFNDNombreEstadoEn(afd, i), nombre);
+                free(temp2);
+
+                /*printf("Inserta %s con %s -> %s\n",AFNDNombreEstadoEn(afd, i)OK, AFNDSimboloEn(afd,j)OK, -falta AFNDNombreEstadoEn(afd, transicionesDet[i][j][k]));*/
                 printf(" %d ", transicionesDet[i][j][k]);
             }
+            printf("TRANSICION AÑADIDA: %s -> %s\n",AFNDNombreEstadoEn(afd, i), nombre);
+            if(flag == 1){
+                AFNDInsertaTransicion(afd, AFNDNombreEstadoEn(afd, i), AFNDSimboloEn(afd, j), nombre);
+            }
+            
+
+            /* Aqui ya esta creado */
+            free(nombre);
             printf("}\t");
         }
         printf("\n");
     }
 
     /*Dado que no hay transiciones lambda por ser un AFD, lo tenemos listo para devolver.*/
-
 
     /*
     ----------------------------------

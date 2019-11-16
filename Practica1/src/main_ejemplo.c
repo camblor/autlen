@@ -34,8 +34,8 @@ int main(int argc, char **argv)
     
     afd = AFNDTransforma(p_afnd);
     
-    /*AFNDImprime(stdout, afd);*/
-    /*AFNDADot(afd);*/
+    AFNDImprime(stdout, afd);
+    AFNDADot(afd);
     AFNDElimina(p_afnd);
     AFNDElimina(afd);
     /*
