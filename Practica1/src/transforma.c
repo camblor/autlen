@@ -435,6 +435,30 @@ int *anadirTransiciones(int *vector, int indiceEstado, int numSimbolos)
     return vector;
 }
 
+
+char* getNombreEstadoDeterminista(int fila){
+        int l;
+        char* nombre = NULL;
+        char* aux = NULL;
+
+        nombre = malloc(sizeof(char) * 2);
+        strcpy(nombre, "q");
+
+        for (l = 1 ; l <= visitados[fila + 1][INDEX]; l++)
+        {
+
+            aux = malloc(sizeof(char) * 2);
+            nombre = realloc(nombre, sizeof(nombre) + sizeof(char));
+            sprintf(aux, "%d", visitados[fila + 1][l]);
+            strcat(nombre, aux);
+            free(aux);
+        }
+        
+        
+        printf("Registrado %s", nombre);
+        return NULL;
+}
+
 /* 
 Funcion: AFNDTransforma
 Funcionalidad: 
@@ -666,15 +690,19 @@ AFND *AFNDTransforma(AFND *afnd)
     Generamos la transformacion del AFND en AFD.
     */
 
-    afd = AFNDNuevo("determinista", 6, 3);
+    afd = AFNDNuevo("determinista", fila, numSimbolos);
     char *nombre;
     char *temp2;
     int tipoEstado = NORMAL;
     int estadoDefinitivo = NORMAL;
+    int yaInicial = 0;
+
     for (i = 0; i < numSimbolos; i++)
     {
+        printf("i=%d - %s\n", i, AFNDSimboloEn(afnd, i));
 
         AFNDInsertaSimbolo(afd, AFNDSimboloEn(afnd, i));
+        printf("i=%d - %s\n", i, AFNDSimboloEn(afd, i));
     }
 
     /*Aqui tenemos los nombres de los estados*/
@@ -691,14 +719,16 @@ AFND *AFNDTransforma(AFND *afnd)
             tipoEstado = AFNDTipoEstadoEn(afnd, visitados[i + 1][l]);
 
             /* INICIALYFINAL */
-            if ((tipoEstado == INICIAL_Y_FINAL && estadoDefinitivo != INICIAL_Y_FINAL) || (tipoEstado == INICIAL && estadoDefinitivo == FINAL) || (tipoEstado == FINAL && estadoDefinitivo == INICIAL))
+            if (((tipoEstado == INICIAL_Y_FINAL && estadoDefinitivo != INICIAL_Y_FINAL) || (tipoEstado == INICIAL && estadoDefinitivo == FINAL) || (tipoEstado == FINAL && estadoDefinitivo == INICIAL) )&& !yaInicial)
             {
                 estadoDefinitivo == INICIAL_Y_FINAL;
+                yaInicial = 1;
             }
             /* INICIAL */
-            else if (tipoEstado == INICIAL && estadoDefinitivo == NORMAL)
+            else if (tipoEstado == INICIAL && estadoDefinitivo == NORMAL && !yaInicial)
             {
                 estadoDefinitivo = INICIAL;
+                yaInicial = 1;
             }
             /* FINAL */
             else if (tipoEstado == FINAL && estadoDefinitivo == NORMAL)
@@ -713,9 +743,21 @@ AFND *AFNDTransforma(AFND *afnd)
             free(temp2);
         }
         printf("ESTADO %s es %d\n", nombre, estadoDefinitivo);
+        
         AFNDInsertaEstado(afd, nombre, estadoDefinitivo);
         free(nombre);
     }
+
+    for(i=0;i<fila;i++){
+        printf("FILA %d - ESTADO %s\n", i, AFNDNombreEstadoEn(afd, i));
+    }
+
+    
+    for (j = 0; j < numSimbolos; j++)
+        {
+            printf("j=%d - %s\n",j, AFNDSimboloEn(afd, j));
+        }
+    
 
     /*Aqui tenemos las transiciones*/
     for (i = 0; i < fila; i++)
@@ -731,7 +773,7 @@ AFND *AFNDTransforma(AFND *afnd)
         {
             printf("%d", visitados[i + 1][l]);
         }
-        printf(" : ");
+        printf(" :\n");
 
         for (j = 0; j < numSimbolos; j++)
         {
@@ -740,14 +782,15 @@ AFND *AFNDTransforma(AFND *afnd)
                 printf("es la i=%d / j=%d\n", i, j);
                 return NULL;
             }
+            printf("j=%d\n",j);
 
-            printf("{");
 
             /*la i y la j funcionan correctamente.*/
 
             /*Para cada celda recorrer vector y crear nombre estado.*/
             nombre = malloc(sizeof(char) * 2);
             strcpy(nombre, "q");
+            imprimeVectorFila(transicionesDet[i][j], 200);
             for (k = 1, flag = 0; k <= transicionesDet[i][j][INDEX]; k++)
             {
                 flag = 1;
@@ -765,9 +808,8 @@ AFND *AFNDTransforma(AFND *afnd)
                 free(temp2);
 
                 /*printf("Inserta %s con %s -> %s\n",AFNDNombreEstadoEn(afd, i)OK, AFNDSimboloEn(afd,j)OK, -falta AFNDNombreEstadoEn(afd, transicionesDet[i][j][k]));*/
-                printf(" %d ", transicionesDet[i][j][k]);
             }
-            printf("TRANSICION AÑADIDA: %s -> %s\n",AFNDNombreEstadoEn(afd, i), nombre);
+            printf("TRANSICION AÑADIDA: %s -> %s mediante %s\n",AFNDNombreEstadoEn(afd, i), nombre, AFNDSimboloEn(afd, j));
             if(flag == 1){
                 AFNDInsertaTransicion(afd, AFNDNombreEstadoEn(afd, i), AFNDSimboloEn(afd, j), nombre);
             }
@@ -775,10 +817,11 @@ AFND *AFNDTransforma(AFND *afnd)
 
             /* Aqui ya esta creado */
             free(nombre);
-            printf("}\t");
         }
         printf("\n");
     }
+
+    
 
     /*Dado que no hay transiciones lambda por ser un AFD, lo tenemos listo para devolver.*/
 
