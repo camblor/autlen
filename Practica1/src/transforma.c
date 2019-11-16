@@ -1,6 +1,5 @@
 #include "../include/transforma.h"
 
-
 #define INDEX 0
 
 /* Tabla dinámica para el AFD*/
@@ -618,6 +617,7 @@ AFND *AFNDTransforma(AFND *afnd)
     
     Impresion por pantalla para control
     */
+    /*
 
     for (i = 0; i < fila; i++)
     {
@@ -656,6 +656,7 @@ AFND *AFNDTransforma(AFND *afnd)
         }
         printf("\n");
     }
+    */
 
     /*
     ----------------------------------
@@ -666,13 +667,68 @@ AFND *AFNDTransforma(AFND *afnd)
     */
 
     afd = AFNDNuevo("determinista", 6, 3);
+    char *temp1;
+    char *temp2;
     for (i = 0; i < numSimbolos; i++)
     {
 
         AFNDInsertaSimbolo(afd, AFNDSimboloEn(afnd, i));
     }
 
-    AFNDElimina(afd);
+    /*Aqui tenemos los nombres de los estados*/
+    printf("\n");
+    for (i = 0; i < fila; i++)
+    {
+        printf("q");
+        for (l = 1; l <= visitados[i + 1][INDEX]; l++)
+        {
+            printf("%d", visitados[i + 1][l]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+
+    /*Aqui tenemos las transiciones*/
+    for (i = 0; i < fila; i++)
+    {
+        if (transicionesDet[i] == NULL)
+        {
+            printf("es la i=%d\n", i);
+            return NULL;
+        }
+        printf("q");
+        for (l = 1; l <= visitados[i + 1][INDEX]; l++)
+        {
+            printf("%d", visitados[i + 1][l]);
+        }
+        printf(" : ");
+
+        for (j = 0; j < numSimbolos; j++)
+        {
+            if (transicionesDet[i][j] == NULL)
+            {
+                printf("es la i=%d / j=%d\n", i, j);
+                return NULL;
+            }
+
+            printf("{");
+            for (k = 1; k <= transicionesDet[i][j][INDEX]; k++)
+            {
+                if (transicionesDet[i][j][k] > numEstados)
+                {
+                    printf("\ntransicionesDet[%d][%d][0] = %d", i, j, transicionesDet[i][j][INDEX]);
+                    printf("\nError en el estado de fila %d, columna j=%d. Elemento %d\n", i, j, k);
+                    return NULL;
+                }
+                printf(" %d ", transicionesDet[i][j][k]);
+            }
+            printf("}\t");
+        }
+        printf("\n");
+    }
+
+    /*Dado que no hay transiciones lambda por ser un AFD, lo tenemos listo para devolver.*/
+
 
     /*
     ----------------------------------
@@ -713,5 +769,5 @@ AFND *AFNDTransforma(AFND *afnd)
     free(visitados[INDEX]);
     free(visitados);
 
-    return afnd;
+    return afd;
 }

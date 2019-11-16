@@ -4,7 +4,7 @@ Prácticas de la asignatura Autómatas y Lenguajes - Ing.Informática - UAM 2019
 
 ## Practica 1 - Transformacion de AFND a AFD
 
-Primera práctica. Se desarrolla un método que transforme autómatas finitos no deterministas en autómatas finitos deterministas.
+Se desarrolla un algoritmo que transforma autómatas finitos no deterministas en autómatas finitos deterministas.
 
 
 ### Utilizacion
@@ -12,8 +12,7 @@ Primera práctica. Se desarrolla un método que transforme autómatas finitos no
 ```bash
 cd Practica1
 make
-cd bin
-./main_ejemplo
+make exec
 ```
 
 ## Autores
