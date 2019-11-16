@@ -7,11 +7,14 @@ int ***transicionesDet = NULL;
 /* Tabla que almacena los estados visitados */
 int **visitados = NULL;
 int n_visitados = 0;
-AFND *afnd_g = NULL;
 
 /*
-function: estudiarAFND
-return: cubo de transiciones del automata finito no determinista.
+Funcion: estudiarAFND
+Funcionalidad: cubo de transiciones del automata finito no determinista.
+Argumentos:
+    AFND* afnd = automata finito no determinista creado y listo para ser transformado.
+    int numEstados = numEstados del AFND.
+    int numSimbolos = numSimbolos.
 */
 int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
 {
@@ -56,6 +59,15 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
     return transiciones;
 }
 
+/*
+Funcion: imprimirAFND
+Funcionalidad: Imprime la tabla del automata finito no determinista.
+Argumentos:
+    int*** transiciones = tabla de transiciones del AFND.
+    int numEstados = numEstados del AFND.
+    int numSimbolos = numSimbolos del AFND.
+
+*/
 void imprimirAFND(int ***transiciones, int numEstados, int numSimbolos)
 {
     int i, j;
@@ -105,8 +117,8 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
             inicialDefinitivo[INDEX]++;
             inicialDefinitivo[inicialDefinitivo[INDEX]] = transiciones[indiceEstado][numSimbolos][i];
         }
-    } /*
-    
+    }
+    /*    
     printf("[");
     for(i=0; i<inicialDefinitivo[INDEX];i++){
         printf(" %d ", inicialDefinitivo[i]);
@@ -117,12 +129,31 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
 }
 
 /*
-function: inicialDeterminista
-retorno: cubo del AFD con el estado inicial visitado e incluido en transicionesDet[n_estado][n_simbolo].
+Funcion: inicialDeterminista
+Funcionalidad: Crea el cubo del AFD con el estado inicial ya visitado y procesadas las transiciones lambda.
+Argumentos:
+    int* vector = vector de la primera fila de la tabla de transiciones del AFD.
+    int numSimbolos = numSimbolos.
+    int*** transiciones = tabla de transiciones del AFND.
+    int fila = indice de la fila en la tabla del AFD.
 */
 int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, int fila)
 {
     int i, j, k;
+
+    /*
+    Procesamos estados accesibles desde los estados iniciales
+
+    Tenemos almacenados los estados iniciales en inicialDefinitivo
+    Por cada estado en inicialDefinitivo, consultamos sus transiciones con cada simbolo
+    y las guardamos en transicionesDet[0][j].
+
+    transicionesDet[0][j][0] = numero de transiciones de esa celda
+    transicionesDet[0][j][1] = transicion 1
+    transicionesDet[0][j][2] = transicion 2
+    ...
+    transicionesDet[0][j][n] = transicion n
+   */
     int ***transicionesDet;
 
     transicionesDet = (int ***)malloc(sizeof(int **));
@@ -169,34 +200,17 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
                 {
                     transicionesDet[fila][j][INDEX]++;
                     transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
-
-                    /*
-                    printf("transicionesDet[%d][%d][0] = %d\n", fila, j , transicionesDet[fila][j][INDEX]);
-                    printf("transicionesDet[%d][%d][%d] = %d\n", fila, j , k, transicionesDet[fila][j][transicionesDet[fila][j][INDEX]]);
-                    */
                 }
             }
         }
     }
-
-    /*
-    Procesamos estados accesibles desde los estados iniciales
-
-    Tenemos almacenados los estados iniciales en inicialDefinitivo
-    Por cada estado en inicialDefinitivo, consultamos sus transiciones con cada simbolo
-    y las guardamos en transicionesDet[0][j].
-
-    transicionesDet[0][j][0] = numero de transiciones de esa celda
-    transicionesDet[0][j][1] = transicion 1
-    transicionesDet[0][j][2] = transicion 2
-    ...
-    transicionesDet[0][j][n] = transicion n
-   */
     return transicionesDet;
 }
 /*
-funcion: crearVisitados
-retorno: tabla de visitados
+Funcion: crearVisitados
+Funcionalidad: Creacion de la tabla de visitados.
+Argumentos:
+    int* vector = vector a introducir como primero visitado.
 */
 int **crearVisitados(int *vector)
 {
@@ -204,19 +218,14 @@ int **crearVisitados(int *vector)
     Ya tenemos guardadas en la tabla las transiciones del determinista 
     Ahora recorremos esa tabla hasta encontrar un estado que no haya sido procesado.
     Contamos por estados también los conjuntos de estado (Definicion recursiva)
-    */
-    /*
+   
     visitados[0][0] = NUMERO DE ESTADOS VISITADOS
     visitados[i] = ESTADO VISITADO QUE PUEDE ESTAR FORMADO POR VARIOS
     visitados[i][0] = NUMERO DE ELEMENTOS DEL ESTADO
-    visitados[i][j] = ELEMENTOS DEL ESTADO   
-    
-    transicionesDet[fila][estado][0] = n transiciones
-    transicionesDet[fila][estado][x] = transicion
+    visitados[i][j] = ELEMENTOS DEL ESTADO 
     */
-    /*int i, j;*/
     int **visitados_i;
-    visitados_i = (int **)malloc(sizeof(int *)*4);
+    visitados_i = (int **)malloc(sizeof(int *) * 4);
     visitados_i[INDEX] = (int *)malloc(sizeof(int));
     visitados_i[INDEX][INDEX] = 1;
     visitados_i[visitados_i[INDEX][INDEX]] = vector;
@@ -224,6 +233,12 @@ int **crearVisitados(int *vector)
     return visitados_i;
 }
 
+/*
+Funcion: imprimeVisitados
+Funcionalidad: Imprime la tabla de los estados visitados.
+ArgumentoS:
+    tabla de estados visitados.
+*/
 void imprimeVisitados(int **visitados_i)
 {
     int i, j;
@@ -251,15 +266,31 @@ void imprimeVisitados(int **visitados_i)
     printf("\n");
 }
 
-int** addVisitado(int *vector)
+/*
+Funcion: addVisitado
+Funcionalidad: Introduce un nuevo vector en la tabla de visitados
+Argumentos:
+    int* vector = vector a introducir.
+*/
+int **addVisitado(int *vector)
 {
+    printf("hehe\n");
     n_visitados++;
     visitados[INDEX][INDEX] = n_visitados;
-    visitados = realloc(visitados, sizeof(visitados) + sizeof(int*));
+    visitados = realloc(visitados, sizeof(visitados) + sizeof(int *));
     visitados[visitados[INDEX][INDEX]] = vector;
     return visitados;
 }
 
+/*
+Funcion: nuevaFilaDeterminista
+Funcionalidad: Introduce una nueva fila al automata finito determinista
+Argumentos:
+    int* vector = vector que quieres introducir en el automata como nueva fila;
+    int numSimbolos = numSimbolos;
+    int ***transiciones = tabla de transiciones del automata finito no determinista;
+    int fila = indice de la nueva fila en el automata finito determinista.
+*/
 int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, int fila)
 {
     int i = 0;
@@ -269,6 +300,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     int m = 0;
     int n = 0;
     int flag = 0;
+    int flag2 = 0;
 
     /* Memoria */
 
@@ -337,9 +369,18 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                     /* Comprobar lambdas para el estado añadido transiciones[vector[i]][j][k]. */
                     for (m = 1; m <= transiciones[transiciones[vector[i]][j][k]][numSimbolos][INDEX]; m++)
                     {
-
-                        transicionesDet[fila][j][INDEX]++;
-                        transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[transiciones[vector[i]][j][k]][numSimbolos][m];
+                        for (n = 1; n <= transicionesDet[fila][j][INDEX]; n++)
+                        {
+                            if (transicionesDet[fila][j][n] == transiciones[transiciones[vector[i]][j][k]][numSimbolos][m])
+                            {
+                                flag2 = 1;
+                            }
+                        }
+                        if (!flag2)
+                        {
+                            transicionesDet[fila][j][INDEX]++;
+                            transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[transiciones[vector[i]][j][k]][numSimbolos][m];
+                        }
                     }
                 }
             }
@@ -349,10 +390,20 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     return transicionesDet;
 }
 
-int *anadirTransiciones(int *vector, int ***transiciones, int indiceEstado, int numSimbolos)
+/*
+Funcion: anadirTransiciones
+Funcionalidad: Introduce en el vector un nuevo estado del AFD
+Argumentos:
+    int* vector = Vector a introducir en la tabla de transiciones.
+    int indiceEstado = Indice del estado a introducir en el vector.
+    int numSimbolos = numSimbolos.
+*/
+int *anadirTransiciones(int *vector, int indiceEstado, int numSimbolos)
 {
     int i = 0;
     int flag = 0;
+
+    printf("Llamada a anadirTransiciones.\n");
 
     for (i = 1; i <= vector[INDEX]; i++)
     {
@@ -371,6 +422,14 @@ int *anadirTransiciones(int *vector, int ***transiciones, int indiceEstado, int 
     return vector;
 }
 
+/* 
+Funcion: AFNDTransforma
+Funcionalidad: 
+    Transforma un automata finito no determinista pasado como argumento
+    y lo transforma en un automata finito determinista de formato AFND.
+Argumentos:
+    AFND* anfd = Automata finito no determinista a transformar en AFD:
+*/
 AFND *AFNDTransforma(AFND *afnd)
 {
 
@@ -388,7 +447,6 @@ AFND *AFNDTransforma(AFND *afnd)
     /* Datos generales del AFND */
     int numSimbolos = AFNDNumSimbolos(afnd);
     int numEstados = AFNDNumEstados(afnd);
-    afnd_g = afnd;
     /* Tablas dinámicas*/
     int ***transiciones = NULL;
     int *inicialDefinitivo = NULL;
@@ -402,9 +460,10 @@ AFND *AFNDTransforma(AFND *afnd)
     ----------------------------------
             ESTUDIO DEL AFND
     ----------------------------------
-    */
+    
 
-    /* Metemos la tabla de transiciones del AFND en transiciones. */
+    Metemos la tabla de transiciones del AFND en transiciones.
+    */
     transiciones = estudiarAFND(afnd, numEstados, numSimbolos);
 
     /* Ahora debemos rellenar la tabla del AFD. */
@@ -413,17 +472,19 @@ AFND *AFNDTransforma(AFND *afnd)
     ----------------------------------
             E.Inicial del AFD
     ----------------------------------
+    
+    Obtenemos el estado inicial teniendo en cuenta lambdas. 
     */
-    /* Obtenemos el estado inicial teniendo en cuenta lambdas. */
     inicialDefinitivo = obtenerInicial(transiciones, AFNDIndiceEstadoInicial(afnd), numSimbolos);
 
     /*
     ----------------------------------
             CREACION TABLA DEL AFD
     ----------------------------------
-    */
+    
 
-    /* Metemos la tabla de transiciones del AFND en transiciones. */
+    Metemos la tabla de transiciones del AFND en transiciones.
+    */
     transicionesDet = inicialDeterminista(inicialDefinitivo, numSimbolos, transiciones, 0);
     fila++;
     n_visitados++;
@@ -436,6 +497,9 @@ AFND *AFNDTransforma(AFND *afnd)
 
     for (i = 0; i < test; i++)
     {
+
+        test = visitados[INDEX][INDEX];
+        printf("i = %d / %d\n", i, test);
         /* Para cada estado i */
         /*printf("FILA %d:\n", i + 1);*/
         for (j = 0; j < numSimbolos; j++)
@@ -476,7 +540,6 @@ AFND *AFNDTransforma(AFND *afnd)
                 /* Si no visitado --> visitamos y lo metemos a la tabla de visitados*/
                 if (k == visitados[0][INDEX] && flag == 0)
                 {
-                    /*printf("TOCARIA RECORRER -> %d\n", transicionesDet[i][j][INDEX]);*/
                     /* Para cada simbolo l */
 
                     /* Para cada estado dentro de los conjuntos de estados */
@@ -487,7 +550,7 @@ AFND *AFNDTransforma(AFND *afnd)
                         {
                             temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
                         }
-                        temporal = anadirTransiciones(temporal, transiciones, transicionesDet[i][j][l], numSimbolos);
+                        temporal = anadirTransiciones(temporal, transicionesDet[i][j][l], numSimbolos);
                     }
                     transicionesDet = nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila);
                     if (!transicionesDet)
