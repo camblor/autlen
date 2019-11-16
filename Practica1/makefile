@@ -34,6 +34,10 @@ clean:
 	@$(rm) $(OBJECTS)
 	@echo "Cleanup complete!"
 
+
+valgrind: valgrind
+	valgrind --leak-check=full --track-origins=yes $(BINDIR)/$(TARGET)
+	
 .PHONY: remove
 remove: clean
 	@$(rm) $(BINDIR)/$(TARGET)

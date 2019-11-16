@@ -556,6 +556,7 @@ AFND *AFNDTransforma(AFND *afnd)
                     break;
                 }
             }
+            printf(" EN transicionesDet[%d][%d] - flag = %d\n", i, j, flag);
             /* Si no visitado --> visitamos y lo metemos a la tabla de visitados*/
             if (flag == 0)
             {
@@ -566,6 +567,7 @@ AFND *AFNDTransforma(AFND *afnd)
 
                 for (l = 1; l <= transicionesDet[i][j][INDEX] && transicionesDet[i][j][INDEX] > 0; l++)
                 {
+                    printf("transicionesDet[%d][%d][%d] = %d\n", i, j, l, transicionesDet[i][j][l]);
                     if (l == 1)
                     {
                         temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
