@@ -373,7 +373,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
 
                     transicionesDet[fila][j][INDEX]++;
 
-                    transicionesDet[fila][j] = realloc(transicionesDet[fila][j], sizeof(transicionesDet[fila][j]) + sizeof(int));
+                    transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
                     transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
 
                     /* Comprobar lambdas para el estado añadido transiciones[vector[i]][j][k]. */
