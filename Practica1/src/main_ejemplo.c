@@ -31,9 +31,9 @@ int main(int argc, char **argv)
     afd = AFNDTransforma(p_afnd);
     
     /*AFNDImprime(stdout, afd);*/
-    /*AFNDADot(afd);*/
+    /*AFNDADot(afd);
 
-    AFNDElimina(afd);
+    AFNDElimina(afd);*/
     /*
     printf("x11");
     fflush(stdout);
