@@ -1,5 +1,6 @@
 #include "../include/transforma.h"
 
+
 #define INDEX 0
 
 /* Tabla dinámica para el AFD*/
@@ -117,11 +118,11 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
         {
 
             vector[INDEX]++;
-            vector = (int*) realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
+            vector = (int *)realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
             vector[vector[INDEX]] = transiciones[indiceEstado][numSimbolos][i];
         }
     }
-    
+
     return vector;
 }
 
@@ -280,7 +281,8 @@ int **addVisitado(int *vector)
     return visitados;
 }
 
-void imprimeVectorFila(int *vector, int fila){
+void imprimeVectorFila(int *vector, int fila)
+{
     int i;
     printf("Vector fila %d: {", fila);
     for (i = 1; i <= vector[INDEX]; i++)
@@ -342,10 +344,6 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     }
 
     /* Ver entrada */
-    if (vector == NULL)
-    {
-        printf("null");
-    }
     imprimeVectorFila(vector, fila);
 
     for (i = 1; i <= vector[INDEX]; i++)
@@ -429,14 +427,14 @@ int *anadirTransiciones(int *vector, int indiceEstado, int numSimbolos)
     /* Si no existe anadir, */
     if (flag != 1)
     {
-        vector = (int *)realloc(vector, sizeof(vector) + sizeof(int));
+
         vector[INDEX]++;
+        vector = (int *)realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
         vector[vector[INDEX]] = indiceEstado;
     }
 
     return vector;
 }
-
 
 /* 
 Funcion: AFNDTransforma
@@ -460,6 +458,7 @@ AFND *AFNDTransforma(AFND *afnd)
     int k = 0;
     int l = 0;
     int m = 0;
+    int n = 0;
     /* Datos generales del AFND */
     int numSimbolos = AFNDNumSimbolos(afnd);
     int numEstados = AFNDNumEstados(afnd);
@@ -469,8 +468,12 @@ AFND *AFNDTransforma(AFND *afnd)
 
     /* Bandera que indica si el estado ya ha sido visitado */
     int flag = 0;
+    int count = 0;
     int fila = 0;
     int *temporal = NULL;
+
+    /* Puntero del AFD */
+    AFND *afd = NULL;
 
     /*
     ----------------------------------
@@ -521,12 +524,15 @@ AFND *AFNDTransforma(AFND *afnd)
     {
 
         /* Para cada estado i */
-        /*printf("FILA %d:\n", i + 1);*/
         for (j = 0; j < numSimbolos; j++)
         {
             /* Introducimos el simbolo j */
 
             /* y comprobamos los estados ya visitados k */
+
+            /*
+                FASE DE COMPROBACION DE SI EL VECTOR TRANSICIONESDET[I][J] ya ha sido visitado 
+            */
             for (k = 1; k <= visitados[INDEX][INDEX]; k++)
             {
 
@@ -534,31 +540,43 @@ AFND *AFNDTransforma(AFND *afnd)
                 if (visitados[k][INDEX] == transicionesDet[i][j][INDEX])
                 {
                     /*Analizamos elemento a elemento*/
-                    for (m = 1, flag = 1; m <= visitados[k][INDEX] && flag == 1; m++)
+                    for (m = 1, flag = 0, count = 0; m <= visitados[k][INDEX]; m++)
                     {
                         /*
                         printf("Comprobando transicionesDet[%d][%d][%d] != visitados[%d][%d]\n", i, j, m, k, m);
                         printf("Comprobando %d con %d\n", transicionesDet[i][j][m], visitados[k][m]);
                         */
-                        /*Si algun elemento distinto --> NO ES EL MISMO -> SIGUIENTE (break)*/
-                        if (transicionesDet[i][j][m] != visitados[k][m])
+                        for (n = 1; n <= transicionesDet[i][j][INDEX]; n++)
                         {
-                            /*printf("No visitado!\n");*/
-                            flag = 0;
+                            if (transicionesDet[i][j][n] == visitados[k][m])
+                            {
+                                /*printf("No visitado!\n");*/
+                                flag++;
+                                break;
+                            }
                         }
+
                         /* Si todos los elementos son iguales --> VISITADO flag = 1*/
                     }
+                    if (flag == visitados[k][INDEX])
+                    {
+                        count = 1;
+                    }
+                }
+                else
+                {
+                    count = 0;
                 }
 
                 /* Si visitado --> pasamos al siguiente */
-                if (flag == 1)
+                if (count == 1)
                 {
                     break;
                 }
             }
-            printf(" EN transicionesDet[%d][%d] - flag = %d\n", i, j, flag);
+            /*printf(" EN transicionesDet[%d][%d] - flag = %d\n", i, j, count);*/
             /* Si no visitado --> visitamos y lo metemos a la tabla de visitados*/
-            if (flag == 0)
+            if (count == 0)
             {
                 /* Para cada simbolo l */
 
@@ -567,23 +585,21 @@ AFND *AFNDTransforma(AFND *afnd)
 
                 for (l = 1; l <= transicionesDet[i][j][INDEX] && transicionesDet[i][j][INDEX] > 0; l++)
                 {
-                    printf("transicionesDet[%d][%d][%d] = %d\n", i, j, l, transicionesDet[i][j][l]);
+                    /*printf("transicionesDet[%d][%d][%d] = %d\n", i, j, l, transicionesDet[i][j][l]);*/
                     if (l == 1)
                     {
                         temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
                     }
-                    if (temporal != NULL){
-                        
+                    if (temporal != NULL)
+                    {
+
                         temporal = anadirTransiciones(temporal, transicionesDet[i][j][l], numSimbolos);
-                        imprimeVectorFila(temporal, 100);
-                        
                     }
-                        
                 }
-                
+
                 if (temporal != NULL)
                 {
-                    
+
                     transicionesDet = nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila++);
                     if (!transicionesDet)
                     {
@@ -592,7 +608,6 @@ AFND *AFNDTransforma(AFND *afnd)
                     visitados = addVisitado(temporal);
                 }
             }
-            
         }
     }
 
@@ -644,6 +659,23 @@ AFND *AFNDTransforma(AFND *afnd)
         }
         printf("\n");
     }
+
+    /*
+    ----------------------------------
+            EJECUTAR EL TRANSFORMA
+    ----------------------------------
+    
+    Generamos la transformacion del AFND en AFD.
+    */
+
+    afd = AFNDNuevo("determinista", 6, 3);
+    for (i = 0; i < numSimbolos; i++)
+    {
+
+        AFNDInsertaSimbolo(afd, AFNDSimboloEn(afnd, i));
+    }
+
+    AFNDElimina(afd);
 
     /*
     ----------------------------------
