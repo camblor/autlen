@@ -2,10 +2,13 @@
 
 #define INDEX 0
 
-/* Tabla dinámica para el AFD*/
+/* Tabla dinamica del AFND */
+int ***transiciones = NULL;
+/* Tabla dinámica para el AFD */
 int ***transicionesDet = NULL;
 /* Tabla que almacena los estados visitados */
 int **visitados = NULL;
+int iniciado = 0;
 int n_visitados = 0;
 
 /*
@@ -85,13 +88,31 @@ void imprimirAFND(int ***transiciones, int numEstados, int numSimbolos)
     printf("\n");
 }
 
+void imprimeVectorFila(int *vector, int fila)
+{
+    int i;
+    printf("Vector fila %d: {", fila);
+    for (i = 1; i <= vector[INDEX]; i++)
+    {
+        printf(" %d ", vector[i]);
+    }
+    printf("}\n");
+}
+
 /*
 function: obtenerInicial
 return: array de enteros con los estados iniciales, lambdas ya tenidas en cuenta
 */
 int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
 {
-    int i;
+    /*
+    Guardamos estados iniciales aplicadas lambdas:
+    vector[0] = numero de estados iniciales.
+    vector[1] = estado inicial 1
+    vector[2] = estado inicial 2
+    ...
+    vector[n] = estado inicial n
+    */
     int *vector = NULL;
     vector = (int *)malloc(sizeof(int));
     if (vector == NULL)
@@ -101,26 +122,33 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos)
     vector[INDEX] = 1;
     vector = realloc(vector, sizeof(vector) + sizeof(int));
     vector[vector[INDEX]] = indiceEstado;
-    /*
-    Guardamos estados iniciales aplicadas lambdas:
-    vector[0] = numero de estados iniciales.
-    vector[1] = estado inicial 1
-    vector[2] = estado inicial 2
-    ...
-    vector[n] = estado inicial n
-    */
-    if (transiciones[indiceEstado][numSimbolos][INDEX] != 0 && transiciones[indiceEstado][numSimbolos][INDEX] != -1)
-    {
-        vector = realloc(vector, sizeof(vector) + (sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]));
-        /*Transiciones lambda*/
-        for (i = 1; i <= transiciones[indiceEstado][numSimbolos][INDEX]; i++)
-        {
 
-            vector[INDEX]++;
-            vector = (int *)realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
-            vector[vector[INDEX]] = transiciones[indiceEstado][numSimbolos][i];
+    if (iniciado == 0)
+    {
+        int i;
+        if (transiciones[indiceEstado][numSimbolos][INDEX] > 0)
+        {
+            /*printf("HE ENTRADO\n");*/
+            vector = realloc(vector, sizeof(vector) + (sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]));
+            /*Transiciones lambda*/
+            for (i = 1; i <= transiciones[indiceEstado][numSimbolos][INDEX]; i++)
+            {
+
+                vector[INDEX]++;
+                vector = (int *)realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
+                vector[vector[INDEX]] = transiciones[indiceEstado][numSimbolos][i];
+            }
         }
+        /*
+        printf("PRIMER ");
+        imprimeVectorFila(vector, 4000);
+        */
+        iniciado++;
     }
+    /*
+    printf("HA PASADO POR AQUI: ");
+    */
+    /*imprimeVectorFila(vector, 4000);*/
 
     return vector;
 }
@@ -196,6 +224,7 @@ int ***inicialDeterminista(int *vector, int numSimbolos, int ***transiciones, in
                 for (k = 1; k <= transiciones[vector[i]][j][INDEX]; k++)
                 {
                     transicionesDet[fila][j][INDEX]++;
+                    transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
                     transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
                 }
             }
@@ -270,25 +299,15 @@ Argumentos:
 */
 int **addVisitado(int *vector)
 {
+
     n_visitados++;
+
     visitados[INDEX][INDEX] = n_visitados;
 
     visitados = (int **)realloc(visitados, (visitados[INDEX][INDEX] * sizeof(int *) + sizeof(int *)));
-
     visitados[visitados[INDEX][INDEX]] = vector;
 
     return visitados;
-}
-
-void imprimeVectorFila(int *vector, int fila)
-{
-    int i;
-    printf("Vector fila %d: {", fila);
-    for (i = 1; i <= vector[INDEX]; i++)
-    {
-        printf(" %d ", vector[i]);
-    }
-    printf("}\n");
 }
 
 /*
@@ -343,12 +362,17 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     }
 
     /* Ver entrada */
-    /*imprimeVectorFila(vector, fila);*/
+    imprimeVectorFila(vector, fila);
 
     for (i = 1; i <= vector[INDEX]; i++)
     {
+        if(fila==2)
+        printf("Estamos evaluando %d\n", vector[i]);
         for (j = 0; j < numSimbolos; j++)
         {
+            if(j==numSimbolos-1 && fila == 2){
+                printf("PROBLEMA\n");
+            }
             /*printf("transiciones[%d][%d][%d] = %d\n", vector[i], j, INDEX, transiciones[vector[i]][j][INDEX]);*/
             for (k = 1; k <= transiciones[vector[i]][j][INDEX]; k++)
             {
@@ -358,47 +382,65 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                     /*Si ya está lo marcamos*/
                     if (transiciones[vector[i]][j][k] == transicionesDet[fila][j][l])
                     {
+                        printf("YA ESTA\n");
                         flag = 1;
                     }
                 }
+                /*flag = compararVectores(transiciones[vector[i]][j],transicionesDet[fila][j] );*/
 
                 if (flag != 1 && transiciones[vector[i]][j][INDEX] != -1)
                 {
-                    /*
-                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-                    printf("transicionesDet[%d][%d][%d]++\n", fila, j, INDEX);
-                    printf("transicionesDet[%d][%d][%d] = %d\n", fila, j, transicionesDet[fila][j][INDEX], transiciones[vector[i]][j][k]);
-                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
-                    */
+
+                    printf("ESTAMOS AÑADIENDO EL VECTOR\n");
 
                     transicionesDet[fila][j][INDEX]++;
 
                     transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
                     transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[vector[i]][j][k];
+                    /*
+                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+                    printf("transicionesDet[%d][%d][%d]++\n", fila, j, INDEX);
+                    printf("transicionesDet[%d][%d][%d] = %d\n", fila, j, transicionesDet[fila][j][transicionesDet[fila][j][INDEX]], transiciones[vector[i]][j][k]);
+                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++\n\n");
+                    */
 
                     /* Comprobar lambdas para el estado añadido transiciones[vector[i]][j][k]. */
+                    printf("VAMOS A COMPROBAR LAMBDAS.\n");
                     for (m = 1; m <= transiciones[transiciones[vector[i]][j][k]][numSimbolos][INDEX]; m++)
                     {
                         for (n = 1; n <= transicionesDet[fila][j][INDEX]; n++)
                         {
+                            flag2 = 0;
                             if (transicionesDet[fila][j][n] == transiciones[transiciones[vector[i]][j][k]][numSimbolos][m])
                             {
                                 flag2 = 1;
                             }
-                        }
-                        if (!flag2)
-                        {
-                            transicionesDet[fila][j][INDEX]++;
-                            transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
-                            transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[transiciones[vector[i]][j][k]][numSimbolos][m];
+                            if (!flag2)
+                            {
+                                transicionesDet[fila][j][INDEX]++;
+                                transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
+                                transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[transiciones[vector[i]][j][k]][numSimbolos][m];
+                            }
                         }
                     }
                 }
             }
         }
     }
-
     return transicionesDet;
+}
+
+int contiene(int *vector, int estado)
+{
+    int i;
+    for (i = 1; i <= vector[0]; i++)
+    {
+        if (vector[i] == estado)
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 /*
@@ -409,21 +451,20 @@ Argumentos:
     int indiceEstado = Indice del estado a introducir en el vector.
     int numSimbolos = numSimbolos.
 */
+
 int *anadirTransiciones(int *vector, int indiceEstado, int numSimbolos)
 {
-    int i = 0;
+    int j = 0;
     int flag = 0;
+    /*
+    printf("AL ");
+    imprimeVectorFila(vector, 180);
+    printf("Le han anadido %d\n", indiceEstado);
+    */
 
     /* Buscamos si ya existe */
-    for (i = 1; i <= vector[INDEX]; i++)
-    {
-        if (vector[i] == indiceEstado)
-        {
-            flag = 1;
-            break;
-        }
-    }
-    /* Si no existe anadir, */
+    flag = contiene(vector, indiceEstado);
+    /* Se añade el indice */
     if (flag != 1)
     {
 
@@ -431,30 +472,18 @@ int *anadirTransiciones(int *vector, int indiceEstado, int numSimbolos)
         vector = (int *)realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
         vector[vector[INDEX]] = indiceEstado;
     }
-    return vector;
-}
-
-char *getNombreEstadoDeterminista(int fila)
-{
-    int l;
-    char *nombre = NULL;
-    char *aux = NULL;
-
-    nombre = malloc(sizeof(char) * 2);
-    strcpy(nombre, "q");
-
-    for (l = 1; l <= visitados[fila + 1][INDEX]; l++)
+    /* Ese indice puede llevar a otros por lambdas. Se comprueban. */
+    for (j = 1; j <= transiciones[indiceEstado][numSimbolos][INDEX]; j++)
     {
 
-        aux = malloc(sizeof(char) * 2);
-        nombre = realloc(nombre, sizeof(nombre) + sizeof(char));
-        sprintf(aux, "%d", visitados[fila + 1][l]);
-        strcat(nombre, aux);
-        free(aux);
+        if (!contiene(vector, transiciones[indiceEstado][numSimbolos][j]))
+        {
+            /*printf("AÑADIDALAMBDA a %d: contiene=%d\n", transiciones[indiceEstado][numSimbolos][j], contiene(vector, transiciones[indiceEstado][numSimbolos][j]));*/
+            vector = anadirTransiciones(vector, transiciones[indiceEstado][numSimbolos][j], numSimbolos);
+        }
     }
 
-    printf("Registrado %s", nombre);
-    return NULL;
+    return vector;
 }
 
 /* 
@@ -478,13 +507,10 @@ AFND *AFNDTransforma(AFND *afnd)
     int j = 0;
     int k = 0;
     int l = 0;
-    int m = 0;
-    int n = 0;
     /* Datos generales del AFND */
     int numSimbolos = AFNDNumSimbolos(afnd);
     int numEstados = AFNDNumEstados(afnd);
-    /* Tablas dinámicas*/
-    int ***transiciones = NULL;
+
     int *inicialDefinitivo = NULL;
 
     /* Bandera que indica si el estado ya ha sido visitado */
@@ -533,11 +559,13 @@ AFND *AFNDTransforma(AFND *afnd)
     visitados = crearVisitados(inicialDefinitivo);
 
     /* Ahora que ya esta creado anadimos a ella los estados que vamos a ir visitando en el bucle principal*/
+    imprimirAFND(transiciones, numEstados, numSimbolos);
 
     /*
     ----------------------------------
             BUCLE PRINCIPAL
     ----------------------------------
+    
     
     Vamos visitando y rellenando la tabla del AFD.
     */
@@ -554,131 +582,95 @@ AFND *AFNDTransforma(AFND *afnd)
             /*
                 FASE DE COMPROBACION DE SI EL VECTOR TRANSICIONESDET[I][J] ya ha sido visitado 
             */
-            for (k = 1; k <= visitados[INDEX][INDEX]; k++)
+            /*printf("transicionesDet[i][j][INDEX] = %d\n", transicionesDet[i][j][INDEX]);*/
+            flag = 0;
+            if (transicionesDet[i][j][INDEX] <= 0)
             {
+                flag = 1;
+                count = 0;
+            }
+            for (k = 1; k <= visitados[INDEX][INDEX] && flag != 1; k++)
+            {
+                /*
+                imprimeVectorFila(visitados[k], 100);
+                imprimeVectorFila(transicionesDet[i][j], 100);
+                */
 
-                /* Si tienen el mismo numero de elementos*/
-                if (visitados[k][INDEX] == transicionesDet[i][j][INDEX])
-                {
-                    /*Analizamos elemento a elemento*/
-                    for (m = 1, flag = 0, count = 0; m <= visitados[k][INDEX]; m++)
-                    {
-                        /*
-                        printf("Comprobando transicionesDet[%d][%d][%d] != visitados[%d][%d]\n", i, j, m, k, m);
-                        printf("Comprobando %d con %d\n", transicionesDet[i][j][m], visitados[k][m]);
-                        */
-                        for (n = 1; n <= transicionesDet[i][j][INDEX]; n++)
-                        {
-                            if (transicionesDet[i][j][n] == visitados[k][m])
-                            {
-                                /*printf("No visitado!\n");*/
-                                flag++;
-                                break;
-                            }
-                        }
+                /*printf("Estamos en (i, j) = (%d, %d) -> INDEX = %d\n", i, j, transicionesDet[i][j][INDEX]);*/
+                /*
+                printf("comparados: %d\n", compararVectores(visitados[k], transicionesDet[i][j]));
+                fflush(stdout);*/
 
-                        /* Si todos los elementos son iguales --> VISITADO flag = 1*/
-                    }
-                    if (flag == visitados[k][INDEX])
-                    {
-                        count = 1;
-                    }
-                }
-                else
-                {
-                    count = 0;
-                }
+                count = compararVectores(visitados[k], transicionesDet[i][j]);
+
+                /*printf("COUNT HA DADO: %d\n", count);*/
 
                 /* Si visitado --> pasamos al siguiente */
-                if (count == 1)
+                if (count == 0)
                 {
                     break;
                 }
             }
-            /*printf(" EN transicionesDet[%d][%d] - flag = %d\n", i, j, count);*/
+            /*imprimeVectorFila(transicionesDet[i][j], 999);*/
             /* Si no visitado --> visitamos y lo metemos a la tabla de visitados*/
-            if (count == 0)
+            if (count != 0)
             {
+                /*imprimeVectorFila(transicionesDet[i][j], 888);*/
                 /* Para cada simbolo l */
 
                 /* Para cada estado dentro de los conjuntos de estados */
                 temporal = NULL;
 
-                for (l = 1; l <= transicionesDet[i][j][INDEX] && transicionesDet[i][j][INDEX] > 0; l++)
+                /*printf("transicionesDet[%d][%d][INDEX] = %d\n", i, j, transicionesDet[i][j][INDEX]);*/
+                for (l = 1; l <= transicionesDet[i][j][INDEX]; l++)
                 {
                     /*printf("transicionesDet[%d][%d][%d] = %d\n", i, j, l, transicionesDet[i][j][l]);*/
                     if (l == 1)
                     {
                         temporal = obtenerInicial(transiciones, transicionesDet[i][j][l], numSimbolos);
+                        /*
+                        printf("\n---\nINICIADO VECTOR: ");
+                        imprimeVectorFila(temporal, 900);
+                        */
                     }
                     if (temporal != NULL)
                     {
-
+                        /*printf("addTransicion: Estado , Simbolo %s -> %s\n", AFNDSimboloEn(afnd, j), AFNDNombreEstadoEn(afnd, transicionesDet[i][j][l]));*/
                         temporal = anadirTransiciones(temporal, transicionesDet[i][j][l], numSimbolos);
+                        /*
+                        printf("\n---\nNUEVATRANSICION: ");
+                        imprimeVectorFila(temporal, 900);*/
+                    }
+                }
+                for (k = 1; k <= visitados[INDEX][INDEX] && flag != 1; k++)
+                {
+
+                    count = compararVectores(visitados[k], temporal);
+
+                    if (count == 0)
+                    {
+                        free(temporal);
+                        temporal = NULL;
+                        break;
                     }
                 }
 
                 if (temporal != NULL)
                 {
-
+                    /* EL PROBLEMA ESTA EN QUE EN LAS TRANSICIONES CREA MAL EL ESTADO DESTINO*/
+                    /*printf("----------------AÑADIDO A LA TABLADET(%d,%d) ", fila, numSimbolos);*/
+                    /*imprimeVectorFila(temporal, 500);*/
                     transicionesDet = nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila++);
                     if (!transicionesDet)
                     {
                         return NULL;
                     }
                     visitados = addVisitado(temporal);
+                    imprimeVisitados(visitados);
                 }
             }
         }
     }
-
-    /*
-    ----------------------------------
-        COMPROBANDO POR TERMINAL
-    ----------------------------------
-    
-    Impresion por pantalla para control
-    */
-    /*
-
-    for (i = 0; i < fila; i++)
-    {
-        if (transicionesDet[i] == NULL)
-        {
-            printf("es la i=%d\n", i);
-            return NULL;
-        }
-        printf("q");
-        for (l = 1; l <= visitados[i + 1][INDEX]; l++)
-        {
-            printf("%d", visitados[i + 1][l]);
-        }
-        printf(" : ");
-
-        for (j = 0; j < numSimbolos; j++)
-        {
-            if (transicionesDet[i][j] == NULL)
-            {
-                printf("es la i=%d / j=%d\n", i, j);
-                return NULL;
-            }
-
-            printf("{");
-            for (k = 1; k <= transicionesDet[i][j][INDEX]; k++)
-            {
-                if (transicionesDet[i][j][k] > numEstados)
-                {
-                    printf("\ntransicionesDet[%d][%d][0] = %d", i, j, transicionesDet[i][j][INDEX]);
-                    printf("\nError en el estado de fila %d, columna j=%d. Elemento %d\n", i, j, k);
-                    return NULL;
-                }
-                printf(" %d ", transicionesDet[i][j][k]);
-            }
-            printf("}\t");
-        }
-        printf("\n");
-    }
-    */
 
     /*
     ----------------------------------
@@ -745,13 +737,14 @@ AFND *AFNDTransforma(AFND *afnd)
     /*Aqui tenemos las transiciones*/
     for (i = 0; i < fila; i++)
     {
-
+        /*
         printf("q");
         for (l = 1; l <= visitados[i + 1][INDEX]; l++)
         {
             printf("%d", visitados[i + 1][l]);
         }
         printf(" :\n");
+        */
 
         for (j = 0; j < numSimbolos; j++)
         {
@@ -761,14 +754,12 @@ AFND *AFNDTransforma(AFND *afnd)
             /*Para cada celda recorrer vector y crear nombre estado.*/
             nombre = malloc(sizeof(char) * 2);
             strcpy(nombre, "q");
-            if (j == 0)
-                imprimeVectorFila(transicionesDet[i][j], 200);
             for (k = 1, flag = 0; k <= transicionesDet[i][j][INDEX]; k++)
             {
                 flag = 1;
 
                 temp2 = malloc(sizeof(char) * 2);
-                nombre = realloc(nombre, sizeof(nombre) + sizeof(char));
+                nombre = realloc(nombre, sizeof(nombre) + sizeof(temp2));
                 sprintf(temp2, "%d", transicionesDet[i][j][k]);
                 strcat(nombre, temp2);
                 free(temp2);
@@ -776,13 +767,39 @@ AFND *AFNDTransforma(AFND *afnd)
 
             if (flag == 1 && transicionesDet[i][j][INDEX] > 0 && AFNDIndiceDeEstado(afd, nombre) != -1)
             {
-                printf("TRANSICION AÑADIDA: %s -> %s mediante %s\n", AFNDNombreEstadoEn(afd, i), nombre, AFNDSimboloEn(afd, j));
+                /*printf("TRANSICION AÑADIDA: %s -> %s mediante %s\n", AFNDNombreEstadoEn(afd, i), nombre, AFNDSimboloEn(afd, j));*/
 
                 AFNDInsertaTransicion(afd, AFNDNombreEstadoEn(afd, i), AFNDSimboloEn(afd, j), nombre);
             }
 
             /* Aqui ya esta creado */
             free(nombre);
+        }
+        /*printf("\n");*/
+    }
+
+    for (i = 0; i < fila; i++)
+    {
+        if (transicionesDet[i] == NULL)
+        {
+            printf("AYUDA EN %d", i);
+            return NULL;
+        }
+        printf("fila %d\n", i);
+
+        for (j = 0; j < numSimbolos; j++)
+        {
+            if (transicionesDet[i][j] == NULL)
+            {
+                printf("AYUDA EN %d-%d\n", i,j);
+                return NULL;
+            }
+            printf("Simbolo %s: {", AFNDSimboloEn(afnd, j));
+            for (k = 1; k <= transicionesDet[i][j][INDEX]; k++)
+            {
+                printf(" %d ", transicionesDet[i][j][k]);
+            }
+            printf("}\n");
         }
         printf("\n");
     }

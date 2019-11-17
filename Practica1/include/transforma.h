@@ -1,6 +1,7 @@
 #ifndef AFND_T
 #define AFND_T
 #include "afnd.h"
+#include "comparar.h"
 
 /* 
 Funcion: AFNDTransforma
