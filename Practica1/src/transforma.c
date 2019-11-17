@@ -310,6 +310,19 @@ int **addVisitado(int *vector)
     return visitados;
 }
 
+int contiene(int *vector, int estado)
+{
+    int i;
+    for (i = 1; i <= vector[0]; i++)
+    {
+        if (vector[i] == estado)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /*
 Funcion: nuevaFilaDeterminista
 Funcionalidad: Introduce una nueva fila al automata finito determinista
@@ -391,7 +404,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                 if (flag != 1 && transiciones[vector[i]][j][INDEX] != -1)
                 {
 
-                    printf("ESTAMOS AÑADIENDO EL VECTOR\n");
+                    /*printf("ESTAMOS AÑADIENDO a la fila %d simbolo %d la transicion a %d\n",fila,j, transiciones[vector[i]][j][k]);*/
 
                     transicionesDet[fila][j][INDEX]++;
 
@@ -408,6 +421,9 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                     printf("VAMOS A COMPROBAR LAMBDAS.\n");
                     for (m = 1; m <= transiciones[transiciones[vector[i]][j][k]][numSimbolos][INDEX]; m++)
                     {
+                        printf("Comprobando en la fila %d simbolo %d la lambda a %d\n",fila,j, transiciones[transiciones[vector[i]][j][k]][numSimbolos][m]);
+                        imprimeVectorFila(transicionesDet[fila][j], fila);
+                        /* EL PROBLEMA ESTA AQUI */
                         for (n = 1; n <= transicionesDet[fila][j][INDEX]; n++)
                         {
                             flag2 = 0;
@@ -415,13 +431,16 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
                             {
                                 flag2 = 1;
                             }
-                            if (!flag2)
+                            if (!flag2 && !contiene(transicionesDet[fila][j], transiciones[transiciones[vector[i]][j][k]][numSimbolos][m]))
                             {
                                 transicionesDet[fila][j][INDEX]++;
                                 transicionesDet[fila][j] = realloc(transicionesDet[fila][j], (transicionesDet[fila][j][INDEX] * sizeof(int)) + sizeof(int));
                                 transicionesDet[fila][j][transicionesDet[fila][j][INDEX]] = transiciones[transiciones[vector[i]][j][k]][numSimbolos][m];
                             }
+                            
                         }
+                        printf("DESPUES:\n");
+                        imprimeVectorFila(transicionesDet[fila][j], fila);
                     }
                 }
             }
@@ -430,18 +449,7 @@ int ***nuevaFilaDeterminista(int *vector, int numSimbolos, int ***transiciones, 
     return transicionesDet;
 }
 
-int contiene(int *vector, int estado)
-{
-    int i;
-    for (i = 1; i <= vector[0]; i++)
-    {
-        if (vector[i] == estado)
-        {
-            return 1;
-        }
-    }
-    return 0;
-}
+
 
 /*
 Funcion: anadirTransiciones
@@ -661,6 +669,7 @@ AFND *AFNDTransforma(AFND *afnd)
                     /*printf("----------------AÑADIDO A LA TABLADET(%d,%d) ", fila, numSimbolos);*/
                     /*imprimeVectorFila(temporal, 500);*/
                     transicionesDet = nuevaFilaDeterminista(temporal, numSimbolos, transiciones, fila++);
+                    printf("FILA=%d\n", fila);
                     if (!transicionesDet)
                     {
                         return NULL;

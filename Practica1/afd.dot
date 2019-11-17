@@ -13,6 +13,7 @@ digraph afd  { rankdir=LR;
 	q1 -> q14 [label="0"];
 	q1 -> q2 [label="."];
 	q14 -> q14 [label="0"];
+	q14 -> q235 [label="."];
 	q2 -> q35 [label="0"];
 	q235 -> q35 [label="0"];
 	q35 -> q35 [label="0"];
