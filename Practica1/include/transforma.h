@@ -1,3 +1,9 @@
+/*
+Archivo: transforma.h
+Funcionalidad: Algoritmo y funciones de transformación de un AFND en AFD.
+Autores: Alfonso Camblor y Julio Carreras
+*/
+
 #ifndef AFND_T
 #define AFND_T
 #include "afnd.h"

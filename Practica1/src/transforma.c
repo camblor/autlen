@@ -1,3 +1,9 @@
+/*
+Archivo: transforma.c
+Funcionalidad: Algoritmo y funciones de transformación de un AFND en AFD.
+Autores: Alfonso Camblor y Julio Carreras
+*/
+
 #include "../include/transforma.h"
 
 /* Tabla dinamica del AFND */

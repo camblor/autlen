@@ -1,3 +1,8 @@
+/*
+Archivo: auxiliar.h
+Funcionalidad: Funciones auxiliares para transforma.c
+Autores: Alfonso Camblor y Julio Carreras
+*/
 #ifndef AFND_AUX
 #define AFND_AUX
 #include "transforma.h"

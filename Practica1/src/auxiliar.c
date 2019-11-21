@@ -1,10 +1,25 @@
+/*
+Archivo: auxiliar.c
+Funcionalidad: Funciones auxiliares para transforma.c
+Autores: Alfonso Camblor y Julio Carreras
+*/
+
+
 #include <stdio.h>
 #include "../include/auxiliar.h"
 
 /*---------------
  Funciones MergeSort
 ---------------*/
-
+/*
+Funcion: merge
+Funcionalidad: Algoritmo MergeSort.
+Argumentos:
+    int* arr: array a ordenar
+    int l: primer indice.
+    int m: punto "medio"
+    int r: ultimo indice.
+*/
 void merge(int *arr, int l, int m, int r)
 {
     int i, j, k;
@@ -60,6 +75,8 @@ void merge(int *arr, int l, int m, int r)
         j++;
         k++;
     }
+    free(left);
+    free(right);
 }
 
 /*
@@ -168,8 +185,9 @@ int ***estudiarAFND(AFND *afnd, int numEstados, int numSimbolos)
                 /*Se guardan las transiciones por simbolos de cada estado en la tabla*/
                 if (j < numSimbolos && AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i, j, k))
                 {
-                    transiciones[i][j] = realloc(transiciones[i][j], sizeof(transiciones[i][j]) + sizeof(int));
+                    
                     transiciones[i][j][INDEX]++;
+                    transiciones[i][j] = realloc(transiciones[i][j], (sizeof(int) * transiciones[i][j][INDEX]) + sizeof(int));
                     transiciones[i][j][transiciones[i][j][INDEX]] = k;
                 }
                 /*Se guardan las transiciones lambda de cada estado en la tabla*/
@@ -531,7 +549,7 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos, int 
         return NULL;
     }
     vector[INDEX] = 1;
-    vector = realloc(vector, sizeof(vector) + sizeof(int));
+    vector = realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int));
     vector[vector[INDEX]] = indiceEstado;
 
     if (iniciado == 0)
@@ -539,7 +557,7 @@ int *obtenerInicial(int ***transiciones, int indiceEstado, int numSimbolos, int 
         int i;
         if (transiciones[indiceEstado][numSimbolos][INDEX] > 0)
         {
-            vector = realloc(vector, sizeof(vector) + (sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]));
+            vector = realloc(vector, (vector[INDEX] * sizeof(int)) + sizeof(int) + (sizeof(int) * transiciones[indiceEstado][numSimbolos][INDEX]));
 
             /*Transiciones lambda*/
             for (i = 1; i <= transiciones[indiceEstado][numSimbolos][INDEX]; i++)

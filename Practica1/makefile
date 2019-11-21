@@ -1,5 +1,5 @@
 # project name (generate executable with this name)
-TARGET   = main_ejemplo
+TARGET   = main
 
 CC       = gcc
 # compiling flags here
@@ -39,7 +39,7 @@ valgrind:
 	valgrind --leak-check=full --track-origins=yes $(BINDIR)/$(TARGET)
 
 exec:
-	./bin/main_ejemplo
+	./bin/main
 	
 .PHONY: remove
 remove: clean
