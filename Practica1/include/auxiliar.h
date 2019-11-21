@@ -3,10 +3,23 @@
 #include "transforma.h"
 #define INDEX 0
 
-/* Funciones MergeSort */
+/*
+Funcion: mergeSort
+Funcionalidad: Algoritmo MergeSort.
+Argumentos:
+    int* arr: array a ordenar
+    int l: primer indice.
+    int r: ultimo indice.
+*/
 void mergeSort(int * arr, int l, int r);
 
-/* Comparador entre vectores */
+/*
+Funcion: compararVectores
+Funcionalidad: compara dos vectores interpretandolos como conjuntos.
+Argumentos:
+    int* vector1: vector a comparar 1
+    int* vector2: vector a comparar 2
+*/
 int compararVectores(int* vector1, int*vector2);
 
 
@@ -72,7 +85,7 @@ int **addVisitado(int *vector, int *n_visitados, int**visitados);
 /*
 Funcion: imprimeVisitados
 Funcionalidad: Imprime la tabla de los estados visitados.
-ArgumentoS:
+Argumentos:
     tabla de estados visitados.
 */
 void imprimeVisitados(int **visitados, int n_visitados);

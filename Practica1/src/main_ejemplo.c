@@ -15,7 +15,7 @@ int main(int argc, char ** argv)
 	AFNDInsertaSimbolo(p_afnd, "0");
 	AFNDInsertaSimbolo(p_afnd,".");
 	
-	AFNDInsertaEstado(p_afnd, "q0",INICIAL_Y_FINAL);
+	AFNDInsertaEstado(p_afnd, "ESTADO",INICIAL_Y_FINAL);
 	AFNDInsertaEstado(p_afnd, "q1", NORMAL);
 	AFNDInsertaEstado(p_afnd, "q2", NORMAL);
 	AFNDInsertaEstado(p_afnd, "q3", NORMAL);
@@ -23,7 +23,7 @@ int main(int argc, char ** argv)
 	AFNDInsertaEstado(p_afnd, "q5", FINAL);
 	AFNDInsertaEstado(p_afnd, "q6", NORMAL);
 	
-	AFNDInsertaTransicion(p_afnd, "q0", "+", "q1");
+	AFNDInsertaTransicion(p_afnd, "ESTADO", "+", "q1");
 	AFNDInsertaTransicion(p_afnd, "q1", "0", "q1");
 	AFNDInsertaTransicion(p_afnd, "q1", "0", "q4");
 	AFNDInsertaTransicion(p_afnd, "q1", ".", "q2");
@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
 	AFNDInsertaTransicion(p_afnd, "q6", ".", "q3");
 	AFNDInsertaTransicion(p_afnd, "q6", "0", "q1");
 	
-	AFNDInsertaLTransicion(p_afnd, "q0", "q1");
+	AFNDInsertaLTransicion(p_afnd, "ESTADO", "q1");
 	AFNDInsertaLTransicion(p_afnd, "q1", "q6");
 	AFNDInsertaLTransicion(p_afnd, "q3", "q5");
 	AFNDInsertaLTransicion(p_afnd, "q5", "q6");

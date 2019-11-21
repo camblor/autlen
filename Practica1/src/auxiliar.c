@@ -12,13 +12,17 @@ void merge(int *arr, int l, int m, int r)
     int n2 = r - m;
 
     /* create temp arrays */
-    int L[n1], R[n2];
+    int *left;
+    int *right;
+
+    left = malloc(sizeof(int) * n1);
+    right = malloc(sizeof(int) * n2);
 
     /* Copy data to temp arrays L[] and R[] */
     for (i = 0; i < n1; i++)
-        L[i] = arr[l + i];
+        left[i] = arr[l + i];
     for (j = 0; j < n2; j++)
-        R[j] = arr[m + 1 + j];
+        right[j] = arr[m + 1 + j];
 
     /* Merge the temp arrays back into arr[l..r]*/
     i = 0;
@@ -26,14 +30,14 @@ void merge(int *arr, int l, int m, int r)
     k = l;
     while (i < n1 && j < n2)
     {
-        if (L[i] <= R[j])
+        if (left[i] <= right[j])
         {
-            arr[k] = L[i];
+            arr[k] = left[i];
             i++;
         }
         else
         {
-            arr[k] = R[j];
+            arr[k] = right[j];
             j++;
         }
         k++;
@@ -43,7 +47,7 @@ void merge(int *arr, int l, int m, int r)
        are any */
     while (i < n1)
     {
-        arr[k] = L[i];
+        arr[k] = left[i];
         i++;
         k++;
     }
@@ -52,12 +56,20 @@ void merge(int *arr, int l, int m, int r)
        are any */
     while (j < n2)
     {
-        arr[k] = R[j];
+        arr[k] = right[j];
         j++;
         k++;
     }
 }
 
+/*
+Funcion: mergeSort
+Funcionalidad: Algoritmo MergeSort.
+Argumentos:
+    int* arr: array a ordenar
+    int l: primer indice.
+    int r: ultimo indice.
+*/
 void mergeSort(int *arr, int l, int r)
 {
     if (l < r)
@@ -72,9 +84,12 @@ void mergeSort(int *arr, int l, int r)
 }
 
 /*
- Funcion de comparacion entre vectores. 
- */
-
+Funcion: compararVectores
+Funcionalidad: compara dos vectores interpretandolos como conjuntos.
+Argumentos:
+    int* vector1: vector a comparar 1
+    int* vector2: vector a comparar 2
+*/
 int compararVectores(int *vector1, int *vector2)
 {
     int i, j;
