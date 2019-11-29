@@ -46,12 +46,7 @@ int **matriz_finales(AFND *afnd, int numEstados, int* fin)
 
     for(i = 0;i<AFNDNumEstados(afnd)-1;i++){
         matriz_dist[i] = (int *)malloc(sizeof(int) * (i+2));
-
-        printf("Estado añadido %d\n", i+1);
-
-
         matriz_dist[i][0] = i+1;
-        printf("%d\n\n", matriz_dist[0][0]);
     }
 
 
@@ -96,24 +91,36 @@ int **matriz_finales(AFND *afnd, int numEstados, int* fin)
         }
         printf("\n");
     }
-
+    return matriz_dist;
 }
 
 
 AFND * AFNDMinimiza(AFND * afnd){
     int *fin;
     int **matriz_dist;
+    int i, j, k;
 
     fin = finalesAFND(afnd, AFNDNumEstados(afnd));
 
     matriz_dist = matriz_finales(afnd, AFNDNumEstados(afnd), fin);
 
-    printf("\n");
+    for(i = 1; i<fin[0]; i++){
+        /*Cada estado de clase finales*/
+        for(j = 1; j < AFNDNumEstados(afnd); j++){    
+            for(k = 0; k<AFNDNumSimbolos(afnd); k++){
+                if(AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, fin[0], k, j) == 1){
+
+                }
+            }
+        }
+    }
+
 
     free(fin);
-    /*for(i =0;i<AFNDNumEstados(afnd)-1;i++){
+    for(i=1;i<AFNDNumEstados(afnd)-1;i++){
+        printf ("free \n");
         free(matriz_dist[i]);
-    }*/
+    }
 
     return afnd;
 }
