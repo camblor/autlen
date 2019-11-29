@@ -1,0 +1,24 @@
+digraph afd  { rankdir=LR;
+	_invisible [style="invis"];
+	q0 [penwidth="2"];
+	q16;
+	q146;
+	q2356 [penwidth="2"];
+	q1356 [penwidth="2"];
+	q356 [penwidth="2"];
+	q13456 [penwidth="2"];
+	_invisible -> q0 ;
+	q0 -> q16 [label="+"];
+	q16 -> q146 [label="transicion"];
+	q16 -> q2356 [label="."];
+	q146 -> q146 [label="transicion"];
+	q146 -> q2356 [label="."];
+	q2356 -> q1356 [label="transicion"];
+	q2356 -> q356 [label="."];
+	q1356 -> q13456 [label="transicion"];
+	q1356 -> q2356 [label="."];
+	q356 -> q1356 [label="transicion"];
+	q356 -> q356 [label="."];
+	q13456 -> q13456 [label="transicion"];
+	q13456 -> q2356 [label="."];
+}

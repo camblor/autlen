@@ -1,0 +1,24 @@
+Este programa es capaz de ejecutar cualquier main que respete los modelos aceptados por la librería "afnd.c".
+
+Dado que los autómatas pueden haber sido creados con diversos nombres, a la hora de transformarlo hemos decidido transformarlos en forma de notación estándar.
+
+Esto implica llamar a los estados desde el inicial al o a los finales empezando por 0 y acabando por n, tal que n sea el numero de estados del automata -1.
+En la transformación al AFD, estos estados han sido juntados variando un poco la notación. En el caso q0q1 tendríamos q01, de la misma forma q2q3q4 = q234.
+
+Los únicos fallos de memoria posibles son causados por la librería ofuscada "afnd.c".
+
+Se proporciona en main_ejemplo.c un main que tiene una palabra por simbolo para comprobar que también sería posible.
+Al igual que se proporciona una palabra por símbolo, se proporciona un estado de nombre "ESTADO". 
+
+Durante la transformación el símbolo se mantiene por corrección, mientras que la palabra se elimina y se sigue el convenio por la misma razón.
+
+Secuencia 1 - (Generar archivos .dot del AFD en la carpeta raíz):
+
+make
+make exec
+
+Secuencia 2 - (Generar archivos .dot en la carpeta dot)
+
+make
+cd bin
+./<TARGET>

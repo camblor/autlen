@@ -1,0 +1,24 @@
+digraph afnd  { rankdir=LR;
+	_invisible [style="invis"];
+	ESTADO [penwidth="2"];
+	q1;
+	q2;
+	q3;
+	q4;
+	q5 [penwidth="2"];
+	q6;
+	_invisible -> ESTADO ;
+	ESTADO -> q1 [label="+"];
+	q1 -> q1 [label="transicion"];
+	q1 -> q4 [label="transicion"];
+	q1 -> q2 [label="."];
+	q2 -> q3 [label="transicion"];
+	q3 -> q3 [label="transicion"];
+	q4 -> q3 [label="."];
+	q6 -> q1 [label="transicion"];
+	q6 -> q3 [label="."];
+	ESTADO -> q1 [label="&lambda;"];
+	q1 -> q6 [label="&lambda;"];
+	q3 -> q5 [label="&lambda;"];
+	q5 -> q6 [label="&lambda;"];
+}
