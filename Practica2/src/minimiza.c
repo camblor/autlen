@@ -9,117 +9,179 @@ Autores: Alfonso Camblor y Julio Carreras
 
 /*
 Funcion: finalesAFND
-Funcionalidad: obtener los estados finales del autómata.
+Funcionalidad: dividir los estados del autómata en finales y no finales.
 Argumentos:
     AFND* afnd = automata finito determinista creado y listo para ser minimizado.
     int numEstados = numEstados del AFND.
 */
+
+int inicial;
+int* estados;
+
 int *finalesAFND(AFND *afnd, int numEstados)
-{
-    int i, j = 1;
-
-    int *finales = NULL;
-
-    finales = (int *)malloc(sizeof(int));
-    finales[0] = 0;
-    for (i = 0; i < numEstados; i++)
-    {   
-        
-        if((AFNDTipoEstadoEn(afnd, i) == 1) || (AFNDTipoEstadoEn(afnd, i) == 2)){
-            finales[0]++;
-            finales = realloc(finales, (finales[0] * sizeof(int)) + sizeof(int));
-            finales[j] = i;
-            j++;
-        }
-    }
-        
-    return finales;
-}
-
-int **matriz_finales(AFND *afnd, int numEstados, int* fin)
 {   
-    int i, j, k, final;
-    int **matriz_dist;
-    matriz_dist = (int **)malloc(sizeof(int*) * (AFNDNumEstados(afnd)-1));
-    if (!matriz_dist)
+    int i;
+    int *estados;
+    estados = (int *)malloc(sizeof(int) * (AFNDNumEstados(afnd)));
+    if(!estados)
         return NULL;
 
-    for(i = 0;i<AFNDNumEstados(afnd)-1;i++){
-        matriz_dist[i] = (int *)malloc(sizeof(int) * (i+2));
-        matriz_dist[i][0] = i+1;
-    }
-
-
-    
-    matriz_dist[i] = (int *)malloc(sizeof(int) * (i+1));
-
-    for(j = 0;j<AFNDNumEstados(afnd)-1;j++){
-        matriz_dist[i][j+1] = j;
-    }
-
-    for(i = 0;i<AFNDNumEstados(afnd);i++){
-        for(j = 0;j<=i+1;j++){
-            printf("%d\t", matriz_dist[i][j]);
+    /* Bucle que divide los estados en finales y no finales, e inicializa la variable global usada para saber cual es el estado inicial*/
+    for (i = 0; i < numEstados; i++)
+    {         
+        if((AFNDTipoEstadoEn(afnd, i) == 2)){
+            estados[i] = 0;
+            inicial = i;
         }
-        printf("\n");
-    }
-
-
-    printf(" Número de estados finales: %d\n", fin[0]);
-    for (i = 1;i<=fin[0]; i++){
-        printf("q = %d \n", fin[i]); 
-
-        final = fin[i];
-    
-
-        /* Vertical */
-        for(j = final; j<(AFNDNumEstados(afnd)-1); j++){
-            /*printf("Se accede a matriz_dist[%d][%d]\n", j, final);*/
-            matriz_dist[j][final+1] = 1;
+        else if((AFNDTipoEstadoEn(afnd, i) == 1)){
+            estados[i] = 0;
         }
 
-        /* Horizontal */
-        for(k = 1;k <= final;k++){
-            matriz_dist[final][k] = 1;
+        else{
+            estados[i] = 1;
+            if((AFNDTipoEstadoEn(afnd, i) == 0)){
+                inicial = i;
+            }  
         }
+
         
     }
+        
+    return estados;
+}
 
-    for(i = 0;i<AFNDNumEstados(afnd);i++){
-        for(j = 0;j<=i+1;j++){
-            printf("%d\t", matriz_dist[i][j]);
+int **matriz_finales(AFND *afnd, int numEstados, int* estados)
+{   
+    int i, i2, i3, j = 0, k = 0, conj=2/*proximo conjunto posible*/, simb/*simbolo*/, est1/*estado a comprobar*/, est2/*estado para comparar*/, cambio = 0;
+    int *finales;
+    int *nofinales;
+    
+
+    finales = (int*)malloc(sizeof(int));
+    nofinales = (int*)malloc(sizeof(int));
+
+
+    for (i = 0; i<numEstados; i++){
+        if(estados[i] == 0){
+            finales[j] = i;
+            j++;
+            finales = realloc(finales, (j * sizeof(int)));            
         }
-        printf("\n");
+
+        if(estados[i] == 1){
+            nofinales[k] = i;
+            k++;
+            nofinales = realloc(nofinales, (k * sizeof(int)) + sizeof(int));            
+        }
     }
-    return matriz_dist;
+    printf("\nfinales:\n");
+    for(i=0; i<j; i++){
+        printf("q%d,  ",  finales[i]);
+    }
+
+    printf("Size: %d,  ", sizeof(finales));
+
+    printf("\nno finales:\n");
+    for(i=0; i<k; i++){
+        printf("q%d,  ",  nofinales[i]);
+    }
+
+
+    /*Bucle para finales*/
+    for(i = 0; i<j; i++){
+        for(i2 = i+1; i2<j; i2++){
+            for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
+                for(i3 = 0; i3<numEstados; i3++){         
+                    if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, finales[i],simb, i3)) == 1){
+                      est1 = i3;
+                      printf ("\nTransicion símbolo %d: %d --> %d\n", simb, finales[i], est1);
+                    }
+                }
+                for(i3 = 0; i3<numEstados; i3++){         
+                    if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, finales[i2],simb, i3)) == 1){
+                      est2 = i3;
+                      printf ("Transicion símbolo %d: %d --> %d\n", simb, finales[i2], est2);
+                    }
+                }
+                if (estados[est1] != estados[est2]){
+                    cambio = 1;
+                }
+            }
+            if (cambio == 1){
+                    printf ("\n Diferente clase \n");
+                    estados[finales[i2]] = conj;
+                    printf ("\n q%d pertenece a conjunto %d ahora \n", finales[i2], conj);
+                    conj++;
+            }
+            else{
+                printf ("\n %d y %d son de la Misma clase \n", finales[i], finales[i2]);
+                if (estados[finales[i2]] != estados[finales[i]]){
+                    estados[finales[i2]] = estados[finales[i]];
+                    conj--;
+                }
+            }  
+        }
+    }
+
+    /*Bucle para no finales*/
+
+    for(i = 0; i<k; i++){
+        for(i2 = i+1; i2<k; i2++){
+            for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
+                for(i3 = 0; i3<numEstados; i3++){         
+                    if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, nofinales[i],simb, i3)) == 1){
+                      est1 = i3;
+                      printf ("\nTransicion símbolo %d: %d --> %d\n", simb, nofinales[i], est1);
+                    }
+                }
+                for(i3 = 0; i3<numEstados; i3++){         
+                    if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, nofinales[i2],simb, i3)) == 1){
+                      est2 = i3;
+                      printf ("Transicion símbolo %d: %d --> %d\n", simb, nofinales[i2], est2);
+                    }
+                }
+                if (estados[est1] != estados[est2]){
+                    printf ("[q%d] = %d, [q%d] = %d\n", est1, estados[est1], est2, estados[est2]);
+                    cambio = 1;
+                }
+            }
+            if (cambio == 1){
+                printf ("\n Diferente clase \n");
+                estados[nofinales[i2]] = conj;
+                printf ("\n q%d pertenece a conjunto %d ahora \n", nofinales[i2], conj);
+                conj++;
+                cambio = 0;
+            }
+            else{
+                printf ("\n %d y %d son de la Misma clase \n", nofinales[i], nofinales[i2]);
+                if (estados[nofinales[i2]] != estados[nofinales[i]]){
+                    estados[nofinales[i2]] = estados[nofinales[i]];
+                    conj--;
+                }
+            }  
+        }
+    }
+
+    for(i=0; i<k; i++){
+        for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){
+
+        }
+    }
+    
+    printf("\n\n");
+
+    return NULL;
 }
 
 
 AFND * AFNDMinimiza(AFND * afnd){
-    int *fin;
-    int **matriz_dist;
-    int i, j, k;
+    int i;
 
-    fin = finalesAFND(afnd, AFNDNumEstados(afnd));
+    estados = finalesAFND(afnd, AFNDNumEstados(afnd));
+    matriz_finales(afnd, AFNDNumEstados(afnd), estados);
 
-    matriz_dist = matriz_finales(afnd, AFNDNumEstados(afnd), fin);
-
-    for(i = 1; i<fin[0]; i++){
-        /*Cada estado de clase finales*/
-        for(j = 1; j < AFNDNumEstados(afnd); j++){    
-            for(k = 0; k<AFNDNumSimbolos(afnd); k++){
-                if(AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, fin[0], k, j) == 1){
-
-                }
-            }
-        }
-    }
-
-
-    free(fin);
-    for(i=1;i<AFNDNumEstados(afnd)-1;i++){
-        printf ("free \n");
-        free(matriz_dist[i]);
+    for(i = 0; i<AFNDNumEstados(afnd); i++){
+        printf("q%d = %d, ", i, estados[i]);
     }
 
     return afnd;
