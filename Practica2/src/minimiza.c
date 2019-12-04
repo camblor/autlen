@@ -52,43 +52,58 @@ int *finalesAFND(AFND *afnd, int numEstados)
 
 int **matriz_finales(AFND *afnd, int numEstados, int* estados)
 {   
-    int i, i2, i3, j = 0, k = 0, conj=2/*proximo conjunto posible*/, simb/*simbolo*/, est1/*estado a comprobar*/, est2/*estado para comparar*/, cambio = 0;
-    int *finales;
-    int *nofinales;
+    int i=1, i2, i3, j = 0, a, prox = 0, cont /*contador de pasos del bucle*/, conj=2/*proximo conjunto posible*/, simb/*simbolo*/, est1/*estado a comprobar*/, est2/*estado para comparar*/, cambio = 0;
     
 
-    finales = (int*)malloc(sizeof(int));
-    nofinales = (int*)malloc(sizeof(int));
-
-
-    for (i = 0; i<numEstados; i++){
-        if(estados[i] == 0){
-            finales[j] = i;
-            j++;
-            finales = realloc(finales, (j * sizeof(int)));            
+    for(i = prox, cont = 0; cont < (2*AFNDNumSimbolos(afnd)); cont++){
+        i = prox;
+        for(i2 = i+1; i2 < numEstados; i2++){
+            if (estados[i] == estados[i2]){
+                printf ("\n q%d // q%d\n", i, i2);
+                for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
+                    for(i3 = 0; i3<numEstados; i3++){         
+                        if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i,simb, i3)) == 1){
+                            est1 = i3;
+                            printf ("\nTransicion símbolo %d: %d --> %d\n", simb, i, est1);
+                        }
+                    }
+                    for(i3 = 0; i3<numEstados; i3++){         
+                        if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i2,simb, i3)) == 1){
+                            est2 = i3;
+                            printf ("Transicion símbolo %d: %d --> %d\n\n", simb, i2, est2);
+                     }
+                    }
+                    if (estados[est1] != estados[est2]){
+                        printf ("\n Diferente clase \n");
+                        estados[i2] = -1;
+                    }
+                }
+            }
         }
-
-        if(estados[i] == 1){
-            nofinales[k] = i;
-            k++;
-            nofinales = realloc(nofinales, (k * sizeof(int)) + sizeof(int));            
+        for(i2 = i+1; i2 < numEstados; i2++){
+            if(estados[i2] == -1){
+                printf (" ENTRA BUCLE ");
+                if (cambio == 0){
+                    prox = i2;
+                }
+                cambio = 1;
+                estados[i2] = conj;
+                printf ("\n PROX = %d  q%d pertenece a conjunto %d ahora \n", prox, i2, conj);
+            }
         }
-    }
-    printf("\nfinales:\n");
-    for(i=0; i<j; i++){
-        printf("q%d,  ",  finales[i]);
-    }
-
-    printf("Size: %d,  ", sizeof(finales));
-
-    printf("\nno finales:\n");
-    for(i=0; i<k; i++){
-        printf("q%d,  ",  nofinales[i]);
-    }
+        if(cambio == 1){
+            printf (" ENTRA COND %d CONJ = %d ",cambio,  conj);
+            cambio = 0;
+            conj++;
+        }
+        else{
+            prox++;
+        }
+    }    
 
 
     /*Bucle para finales*/
-    for(i = 0; i<j; i++){
+    /*for(i = 0; i<j; i++){
         for(i2 = i+1; i2<j; i2++){
             for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
                 for(i3 = 0; i3<numEstados; i3++){         
@@ -112,6 +127,7 @@ int **matriz_finales(AFND *afnd, int numEstados, int* estados)
                     estados[finales[i2]] = conj;
                     printf ("\n q%d pertenece a conjunto %d ahora \n", finales[i2], conj);
                     conj++;
+                    cambio = 0;
             }
             else{
                 printf ("\n %d y %d son de la Misma clase \n", finales[i], finales[i2]);
@@ -122,9 +138,9 @@ int **matriz_finales(AFND *afnd, int numEstados, int* estados)
             }  
         }
     }
-
+    */
     /*Bucle para no finales*/
-
+    /*
     for(i = 0; i<k; i++){
         for(i2 = i+1; i2<k; i2++){
             for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
@@ -169,7 +185,7 @@ int **matriz_finales(AFND *afnd, int numEstados, int* estados)
     }
     
     printf("\n\n");
-
+    */
     return NULL;
 }
 
