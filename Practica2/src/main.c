@@ -1,5 +1,6 @@
 
 #include "../include/minimiza.h"
+#include <string.h>
 
 
 int main(int argc, char ** argv)
@@ -59,5 +60,6 @@ int main(int argc, char ** argv)
 
 	AFNDElimina(p_afnd);
 
+	AFNDElimina(p_afnd_min);
 	return 0;
 }
