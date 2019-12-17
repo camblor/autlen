@@ -169,7 +169,7 @@ Argumentos:
 */
 
 AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
-    int i, i2, i3, j = 0, simb/*simbolo*/, est1/*estado a comprobar*/, k = 1, l;
+    int i, i2, i3, j = 0, simb/*simbolo*/, est1/*estado a comprobar*/, k = 1/*para nombres*/, l;
     AFND* p_afnd;
     char** nombres = NULL; 
     int tipo;
@@ -224,6 +224,7 @@ AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
             }
             printf ("\n%s\n", nombres[k]);
             AFNDInsertaEstado(p_afnd, nombres[k], tipo);
+            k++;
         }
     }
 
