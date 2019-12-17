@@ -17,37 +17,64 @@ Argumentos:
 
 int inicial;
 int* estados;
-int inifinal;
+int* accesibles;
+int inifinal = 0;
 
 int *finalesAFND(AFND *afnd, int numEstados)
 {   
     int i;
-    int *estados;
     estados = (int *)malloc(sizeof(int) * (AFNDNumEstados(afnd)));
     if(!estados)
         return NULL;
 
+    accesibles = (int*)malloc(sizeof(int) * numEstados);
+    if(!accesibles)
+        return NULL;
+
+    for(i = 0; i<AFNDNumEstados(afnd); i++){
+        accesibles[i] = 0;
+    }
+
     /* Bucle que divide los estados en finales y no finales, e inicializa la variable global usada para saber cual es el estado inicial*/
-    for (i = 0; i < numEstados; i++)
-    {         
+
+    /* Buscamos estado final e inicial */
+    for (i = 0; i < numEstados; i++){     
         if((AFNDTipoEstadoEn(afnd, i) == 2)){
             estados[i] = 0;
             inicial = i;
             inifinal = 1;
+            accesibles[i] = 1;
         }
-        else if((AFNDTipoEstadoEn(afnd, i) == 1)){
-            estados[i] = 0;
-        }
+    }
+    /*Intentaremos que el conjunto de iniciales sea el 0 */
+    if(inifinal == 1){
+        for (i = 0; i < numEstados; i++){
+            if((AFNDTipoEstadoEn(afnd, i) == 1 || AFNDTipoEstadoEn(afnd, i) == 2)){
+                estados[i] = 0;
+            }
 
-        else{
-            estados[i] = 1;
-            if((AFNDTipoEstadoEn(afnd, i) == 0)){
-                inicial = i;
-                inifinal = 0;
-            }  
+            else{
+                estados[i] = 1;
+            }        
         }
+        for(i = 0; i<AFNDNumEstados(afnd); i++){
+        printf("q%d = %d, ", i, estados[i]);
+    }
+    }
+    else{
+        for (i = 0; i < numEstados; i++){
+            if((AFNDTipoEstadoEn(afnd, i) == 1)){
+                estados[i] = 1;
+            }
 
-        
+            else{
+                estados[i] = 0;
+                if((AFNDTipoEstadoEn(afnd, i) == 0)){
+                    inicial = i;
+                    accesibles[i] = 1;
+                }  
+            }        
+        }
     }
         
     return estados;
@@ -84,12 +111,14 @@ int transiciones_est(AFND *afnd, int numEstados)
                     for(i3 = 0; i3<numEstados; i3++){         
                         if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i,simb, i3)) == 1){
                             est1 = i3;
+                            accesibles[i3] = 1;
                             printf ("\nTransicion símbolo %d: %d --> %d\n", simb, i, est1);
                         }
                     }
                     for(i3 = 0; i3<numEstados; i3++){         
                         if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i2,simb, i3)) == 1){
                             est2 = i3;
+                            accesibles[i3] = 1;
                             printf ("Transicion símbolo %d: %d --> %d\n\n", simb, i2, est2);
                         }
                     }
@@ -140,9 +169,10 @@ Argumentos:
 */
 
 AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
-    int i, i3, j = 0, simb/*simbolo*/, est1/*estado a comprobar*/;
+    int i, i2, i3, j = 0, simb/*simbolo*/, est1/*estado a comprobar*/, k = 1, l;
     AFND* p_afnd;
-    char** nombres;
+    char** nombres = NULL; 
+    int tipo;
 
     p_afnd = AFNDNuevo("afmin",conj,AFNDNumSimbolos(afnd));
 
@@ -150,7 +180,7 @@ AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
     nombres = malloc(conj * sizeof(char*));
 
 
-    /*Insertamos imbolos en nuestro afnd*/
+    /*Insertamos simbolos en nuestro afnd*/
     for(simb = 0; simb<AFNDNumSimbolos(afnd); simb++){
         AFNDInsertaSimbolo(p_afnd, AFNDSimboloEn(afnd, simb));
     }
@@ -168,23 +198,33 @@ AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
         }
     }
     printf ("\n%s\n", nombres[0]);
-    AFNDInsertaEstado(p_afnd, nombres[0], INICIAL_Y_FINAL);
+    if (inifinal == 1){
+        AFNDInsertaEstado(p_afnd, nombres[0], INICIAL_Y_FINAL);
+    }
+    else {
+        AFNDInsertaEstado(p_afnd, nombres[0], INICIAL);
+    }
 
     /*Creamos el resto de estados*/
-    for(i=1;i<conj;i++){
-        nombres[i] = malloc((80+1) * sizeof(char)); 
-        if (!nombres[i]){
-            return NULL;
-        }        
-        nombres[i][0] = '\0';
+    for(i=0; i < conj; i++){
+        if(i!= estados[inicial]){
+            nombres[k] = malloc((80+1) * sizeof(char));
+            if (!nombres[k]){
+                return NULL;
+            }        
+            nombres[k][0] = '\0';
 
-        for(j=0;j<numEstados;j++){
-            if(estados[j] == i){
-                strcat(nombres[i], AFNDNombreEstadoEn(afnd, j));
+            for(j=0;j<numEstados;j++){
+                if(estados[j] == i){
+                    tipo = AFNDTipoEstadoEn(afnd, j);
+                    if(accesibles[j] != 0){
+                        strcat(nombres[k], AFNDNombreEstadoEn(afnd, j));
+                    }                
+                }
             }
+            printf ("\n%s\n", nombres[k]);
+            AFNDInsertaEstado(p_afnd, nombres[k], tipo);
         }
-        printf ("\n%s\n", nombres[i]);
-        AFNDInsertaEstado(p_afnd, nombres[i], NORMAL);
     }
 
     /*Insertamos las transiciones inicial*/
@@ -193,17 +233,25 @@ AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
             if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, inicial,simb, i3)) == 1){
                 est1 = i3;
                 AFNDInsertaTransicion(p_afnd, AFNDNombreEstadoEn(p_afnd, 0), AFNDSimboloEn(p_afnd, simb), AFNDNombreEstadoEn(p_afnd, estados[est1]));
+
             }        
         }
     }
     
     /*Insertamos las transiciones del resto de estados*/
-    for(i=1;i<conj;i++){
-        for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
-            for(i3 = 0; i3<numEstados; i3++){         
-                if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i,simb, i3)) == 1){
-                    est1 = i3;
-                    AFNDInsertaTransicion(p_afnd, AFNDNombreEstadoEn(p_afnd, estados[i]), AFNDSimboloEn(p_afnd, simb), AFNDNombreEstadoEn(p_afnd, estados[est1]));
+    for(i=0; i < conj; i++){
+        if(i!= estados[inicial]){
+            for(l = 0; l<numEstados;l++){
+                if (estados[l] == i){
+                    i2 = l;
+                }
+            }
+            for(simb=0; simb<AFNDNumSimbolos(afnd); simb++){   
+                for(i3 = 0; i3<numEstados; i3++){         
+                    if ((AFNDTransicionIndicesEstadoiSimboloEstadof(afnd, i2,simb, i3)) == 1){
+                        est1 = i3;
+                        AFNDInsertaTransicion(p_afnd, AFNDNombreEstadoEn(p_afnd, estados[i2]), AFNDSimboloEn(p_afnd, simb), AFNDNombreEstadoEn(p_afnd, estados[est1]));
+                    }
                 }
             }
         }
@@ -212,6 +260,7 @@ AFND* crea_afnd(AFND *afnd, int numEstados, int conj){
     for(i=0;i<conj;i++){
         free(nombres[i]);
     }
+    
     free(nombres);
     return p_afnd;
 }
@@ -230,7 +279,13 @@ AFND * AFNDMinimiza(AFND * afnd){
         printf("q%d = %d, ", i, estados[i]);
     }
 
+    printf ("\n\n");
+    for(i = 0; i<AFNDNumEstados(afnd); i++){
+        printf("q%d = %d, ", i, accesibles[i]);
+    }
 
+
+    free(accesibles);
     free(estados);
     return p_afnd;
 }
