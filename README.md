@@ -7,13 +7,10 @@ Prácticas de la asignatura Autómatas y Lenguajes - Ing.Informática - UAM 2019
 Se desarrolla un algoritmo que transforma autómatas finitos no deterministas en autómatas finitos deterministas.
 
 
-### Utilizacion
+## Practica 1 - Transformacion de AFND a AFD
 
-```bash
-cd Practica1
-make
-make exec
-```
+Se desarrolla un algoritmo que minimiza autómatas finitos deterministas.
+
 
 ## Autores
 
